@@ -21,6 +21,8 @@
 		let endx = -1;
 		let endy = -1;
 
+		const INF = 999;
+
 		let drawTable = (x,y,w,h) => {
 			$("body").append('<table border="1" cellspacing="0" cellpadding="0" align="center" valign="center" style="margin-top:10%;"></table>');
 			for (let i = 0; i < x; i++) {
@@ -93,15 +95,36 @@
 		}
 
 		let dijkstra = () => {
+			//把table数据存入数组
 			let mapArr = new Array(mapx);
 			for (let i = 0; i < mapx; i++) {
 				mapArr[i] = new Array(mapy);
 				for (let j = 0; j < mapy; j++) {
 					let val = $("tr").eq(i).find("td").eq(j).children().val();
 					mapArr[i][j] = val;
-					console.log("i:"+i+",j:"+j+",val:"+val);
+					console.log("map:i:"+i+",j:"+j+",val:"+val);
 				}
 			}
+
+			//初始化顶点数和边数，为邻接矩阵开辟空间和赋初值
+			let vertex = mapx*mapy;
+			let edge = mapx*(mapy-1)+(mapx-1)*mapy;
+			let dis = new Array(vertex);
+			let visit = new Array(vertex);
+			let adj = new Array(vertex);
+			for (let i = 0; i < vertex; i++) {
+				adj[i] = new Array(vertex);
+				for (let j = 0; j < vertex; j++) {
+					adj[i][j] = INF;
+					console.log("adj:i:" + i + ",j:" + j + ",val:" + val);
+				}
+			}
+
+			//首先判断边的信息是否合法,再对邻接矩阵对应上的点赋值
+			
+			//首先初始化我们的dis数组
+
+			//计算剩余的顶点的最短路径
 		}
 
 		$(()=>{
