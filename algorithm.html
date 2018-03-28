@@ -1,0 +1,119 @@
+<!doctype html>
+<html>
+<head>
+	<title>algorithm</title>
+	<script src="jquery-1.12.3.min.js"></script>
+</head>
+<style>
+	input:hover{
+		background-color: greenyellow;
+	}
+</style>
+<body style="margin:0;padding:0;">
+	<script>
+		let mapx = 0;
+		let mapy = 0;
+		let mapw = 0;
+		let maph = 0;
+
+		let startx = -1;
+		let starty = -1;
+		let endx = -1;
+		let endy = -1;
+
+		let drawTable = (x,y,w,h) => {
+			$("body").append('<table border="1" cellspacing="0" cellpadding="0" align="center" valign="center" style="margin-top:10%;"></table>');
+			for (let i = 0; i < x; i++) {
+				$("table").append('<tr></tr>');
+			}
+			for (let j = 0; j < y; j++) {
+				$("tr").append('<td><input /></td>');
+			}
+			$("input").css({"width":w+"px","height":h+"px"});
+			mapx = x;
+			mapy = y;
+			mapw = w;
+			maph = h;
+		}
+
+		let insertRandomNumber = () => {
+			for (let i = 0; i < $("input").length; i++) {
+				$("input").eq(i).val(parseInt(Math.random()*10));
+			}
+		}
+
+		let setStartEnd = () => {
+			$("#start").on("click", function () {
+				console.log("点击选择起始点");
+				$("td").on("click", function () {
+					$("tr").eq(startx).find("td").eq(starty).children().css("background-color", "");
+					let x = $("tr").index($(this).parent());
+					let y = $(this).parent().find("td").index($(this));
+					$(this).children().css("background-color", "yellow");
+					startx = x;
+					starty = y;
+					console.log("起始点:(" + x + "," + y + ")");
+					$("td").unbind();
+				});
+			});
+
+			$("#end").on("click", function () {
+				console.log("点击选择终止点");
+				$("td").on("click", function () {
+					$("tr").eq(endx).find("td").eq(endy).children().css("background-color", "");
+					let x = $("tr").index($(this).parent());
+					let y = $(this).parent().find("td").index($(this));
+					$(this).children().css("background-color", "orange");
+					endx = x;
+					endy = y;
+					console.log("起始点:(" + x + "," + y + ")");
+					$("td").unbind();
+				});
+			});
+		}
+
+		let runShortestPath = () => {
+			$("#shortestPath").on("click",function(){
+				if(!checkSame()){
+					dijkstra();
+					//clear();
+				}
+			});
+		}
+
+		let checkSame = () => {
+			if(startx != -1 && starty != -1 && endx != -1 && endy != -1 && (startx != endx || starty != endy)){
+				console.log("two points valid");
+				return false;
+			}
+			else{
+				console.log("two points invalid");
+				return true;
+			}
+		}
+
+		let dijkstra = () => {
+			let mapArr = new Array(mapx);
+			for (let i = 0; i < mapx; i++) {
+				mapArr[i] = new Array(mapy);
+				for (let j = 0; j < mapy; j++) {
+					let val = $("tr").eq(i).find("td").eq(j).children().val();
+					mapArr[i][j] = val;
+					console.log("i:"+i+",j:"+j+",val:"+val);
+				}
+			}
+		}
+
+		$(()=>{
+			drawTable(10,10,50,50);
+			insertRandomNumber();
+			setStartEnd();
+			runShortestPath();
+		});
+	</script>
+
+	<button id="start">start</button>
+	<button id="end">end</button>
+	<button id="shortestPath">shortestPath</button>
+</body>
+</html>
