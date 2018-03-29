@@ -1,0 +1,242 @@
+<!doctype html>
+<html>
+<head>
+	<title>Shortest Path Algorithm</title>
+	<script src="jquery-1.12.3.min.js"></script>
+</head>
+<style>
+	input:hover{
+		background-color: greenyellow;
+	}
+</style>
+<body style="margin:0;padding:0;">
+	<script>
+		let mapx = 0;
+		let mapy = 0;
+		let mapw = 0;
+		let maph = 0;
+
+		let startx = -1;
+		let starty = -1;
+		let endx = -1;
+		let endy = -1;
+
+		const INF = 999;
+
+		let drawTable = (x,y,w,h) => {
+			$("body").append('<table border="1" cellspacing="0" cellpadding="0" align="center" valign="center" style="margin-top:10%;" id="base"></table>');
+			for (let i = 0; i < x; i++) {
+				$("#base").append('<tr></tr>');
+			}
+			for (let j = 0; j < y; j++) {
+				$("#base tr").append('<td><input /></td>');
+			}
+			$("#base input").css({"width":w+"px","height":h+"px"});
+			mapx = x;
+			mapy = y;
+			mapw = w;
+			maph = h;
+		}
+
+		let insertRandomNumber = () => {
+			for (let i = 0; i < $("#base input").length; i++) {
+				$("#base input").eq(i).val(parseInt(Math.random()*10));
+			}
+		}
+
+		let setStartEnd = () => {
+			$("#start").on("click", function () {
+				console.log("点击选择起始点");
+				$("#base td").on("click", function () {
+					$("#base tr").eq(startx).find("td").eq(starty).children().css("background-color", "");
+					let x = $("#base tr").index($(this).parent());
+					let y = $(this).parent().find("td").index($(this));
+					$(this).children().css("background-color", "yellow");
+					startx = x;
+					starty = y;
+					console.log("起始点:(" + x + "," + y + ")");
+					$("#base td").unbind();
+				});
+			});
+
+			$("#end").on("click", function () {
+				console.log("点击选择终止点");
+				$("#base td").on("click", function () {
+					$("#base tr").eq(endx).find("td").eq(endy).children().css("background-color", "");
+					let x = $("#base tr").index($(this).parent());
+					let y = $(this).parent().find("td").index($(this));
+					$(this).children().css("background-color", "orange");
+					endx = x;
+					endy = y;
+					console.log("起始点:(" + x + "," + y + ")");
+					$("#base td").unbind();
+				});
+			});
+		}
+
+		let runShortestPath = () => {
+			$("#shortestPath").on("click",function(){
+				if(!checkSame()){
+					dijkstra();
+					clear();
+				}
+			});
+		}
+
+		let checkSame = () => {
+			if(startx != -1 && starty != -1 && endx != -1 && endy != -1 && (startx != endx || starty != endy)){
+				console.log("two points valid");
+				return false;
+			}
+			else{
+				console.log("two points invalid");
+				return true;
+			}
+		}
+
+		let dijkstra = () => {
+			//把table数据存入数组
+			let mapArr = new Array(mapx);
+			for (let i = 0; i < mapx; i++) {
+				mapArr[i] = new Array(mapy);
+				for (let j = 0; j < mapy; j++) {
+					let val = $("tr").eq(i).find("td").eq(j).children().val();
+					mapArr[i][j] = parseInt(val);
+					//console.log("map:i:"+i+",j:"+j+",val:"+val);
+				}
+			}
+
+			//初始化顶点数和边数，为邻接矩阵开辟空间和赋初值
+			let vertex = mapx*mapy;
+			//let edge = mapx*(mapy-1)+(mapx-1)*mapy;
+			let startPointNum = startx * mapy + starty;
+			let endPointNum = endx * mapy + endy;
+			let dis = new Array(vertex);//记录起点到每个顶点的最短路径的信息
+			//let visit = new Array(vertex);
+			let adj = new Array(vertex);
+			for (let i = 0; i < vertex; i++) {
+				adj[i] = new Array(vertex);
+				for (let j = 0; j < vertex; j++) {
+					adj[i][j] = INF;
+				}
+			}
+
+			let getPathCost = (start, end) => {
+				let point1x = parseInt(start/mapy);
+				let point1y = start % mapy;
+				let point2x = parseInt(end / mapy);
+				let point2y = end % mapy;
+				let deltax = Math.abs(point1x - point2x);
+				let deltay = Math.abs(point1y - point2y);
+
+				//判断点是否相邻,相邻则返回目标点的cost，否则cost为无穷
+				if((deltax == 1 && deltay == 0) || (deltax == 0 && deltay == 1)){
+					return parseInt(mapArr[point2x][point2y]);
+				}
+				else{
+					return INF;
+				}
+			}
+
+			//首先判断边的信息是否合法,再对邻接矩阵对应上的点赋值
+			for (let end = 0; end < vertex; end++) {
+				for (let start = 0; start < vertex; start++) {
+					if(start == end){
+						adj[start][end] = 0;
+						//console.log("adj:start:" + start + ",end:" + end + ",val:" + adj[start][end]);
+					}
+					else{
+						adj[start][end] = getPathCost(start, end);
+						//console.log("adj:start:" + start + ",end:" + end + ",val:" + adj[start][end]);
+					}
+				}
+			}
+
+			//打印邻接矩阵
+			// $("body").append('<table border="1" cellspacing="0" cellpadding="0" align="center" valign="center" style="margin-top:10%;" id="adj"></table>');
+			// for (let i = 0; i < vertex; i++) {
+			// 	$("#adj").append('<tr></tr>');
+			// }
+			// for (let j = 0; j < vertex; j++) {
+			// 	$("#adj tr").append('<td><input /></td>');
+			// }
+			// $("#adj input").css({ "width": "20px", "height": "20px" });
+			// for (let i = 0; i < $("#adj input").length; i++) {
+			// 	let x = parseInt(i / vertex);
+			// 	let y = i % vertex;
+			// 	$("#adj input").eq(i).val(adj[x][y]);
+			// }
+			
+
+			//首先初始化我们的dis数组
+			for (let i = 0; i < vertex; i++) {
+				let msg = new Object();
+				msg.path = "v" + startPointNum + "-->v" + (i).toString();
+				msg.value = parseInt(adj[startPointNum][i]);
+				msg.visit = false;
+				dis[i] = msg;
+			}
+			
+			//设置起点的到起点的路径为0
+			dis[startPointNum].value = 0;
+			dis[startPointNum].visit = true;
+
+			//计算剩余的顶点的最短路径
+			for (let i = 0; i < vertex; i++) {
+				let minCostPoint = 0;
+				let minCost = INF;
+				//a找出最近直连点b，路径为pathAB
+				for (let j = 0; j < vertex; j++) {
+					if(!dis[j].visit && dis[j].value < minCost){
+						minCost = dis[j].value;
+						minCostPoint = j;
+					}					
+				}
+				dis[minCostPoint].visit = true;
+				//遍历b的所有直连点,找出最近直连点c，路径为pathBC，如果有路径pathAB+pathBC<pathAC，则更新pathAC距离
+				for (let j = 0; j < vertex; j++) {
+					if(!dis[j].visit && adj[minCostPoint][j] < INF && (dis[minCostPoint].value + adj[minCostPoint][j] < dis[j].value)){
+						dis[j].value = dis[minCostPoint].value + adj[minCostPoint][j];
+						dis[j].path = dis[minCostPoint].path + "-->v" + (j).toString();
+					}					
+				}
+			}
+			
+			//画出最短路径
+			console.log("path:" + dis[endPointNum].path);
+			console.log("cost:" + dis[endPointNum].value);
+			let path = dis[endPointNum].path.split("-->");
+
+			let cnt = 0;
+			let drawPath =  setInterval(function(){
+				if(cnt == path.length-1) clearInterval(drawPath);
+				$("#base input").eq(parseInt(path[cnt].substring(1))).css("background-color", "dodgerblue");
+				cnt++;
+			},1000);
+			// for (let i = 0; i < path.length; i++) {
+			// 	$("#base input").eq(parseInt(path[i].substring(1))).css("background-color", "dodgerblue");
+			// }
+		}
+
+		let clear = () => {
+			$("#clear").on("click",function(){
+				$("#base input").css("background-color", "");
+				$("#base input").eq(startx*mapy+starty).css("background-color", "yellow");
+				$("#base input").eq(endx * mapy + endy).css("background-color", "orange");
+			});
+		}
+
+		$(()=>{
+			drawTable(10,10,50,50);
+			insertRandomNumber();
+			setStartEnd();
+			runShortestPath();
+		});
+	</script>
+
+	<button id="start">start</button>
+	<button id="end">end</button>
+	<button id="shortestPath">shortestPath</button>
+	<button id="clear">clear</button>
+</body>
+</html>
