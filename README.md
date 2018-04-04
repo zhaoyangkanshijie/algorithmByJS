@@ -9,8 +9,8 @@
 2. Click one of "sort" to sort the numbers
 3. Click "reset" to create random numbers
 ## dfs algorithm -> see dfs.html
-copy from : https://blog.csdn.net/zwseaman/article/details/7592855
+copy from : https://blog.csdn.net/zwseaman/article/details/7592855 <br>
 It will be rewritten when I have time
 ## prim algorithm -> see prim.html
-copy from : https://blog.csdn.net/scargtt/article/details/71078275
+copy from : https://blog.csdn.net/scargtt/article/details/71078275 <br>
 It will be rewritten when I have time
