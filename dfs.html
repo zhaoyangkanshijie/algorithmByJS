@@ -1,0 +1,223 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>DFS Algorithm</title>
+    <script src="jquery-1.12.3.min.js"></script>
+</head>
+
+<body oncontextmenu="return false" onselectstart="return false">
+    格子长：
+    <input type="text" id="txtLength" value="10" /> 格子宽：
+    <input type="text" id="txtWidth" value="10" />
+    <input type="button" value="绘制格子" id="btnPrint" onclick="initGrid();" />
+    <input type="button" value="搜索路径" id="btnPrint" onclick="startSearch();" />
+    <br/> 提示：点击格子设置/取消障碍
+    <div id="container">
+    </div>
+    <div id="msg">
+    </div>
+    <div>
+        <script>
+            var tdTitle = "点击格子设置/取消障碍";
+            var grid = [];
+            var X = Y = 0;
+            var gridUI = [];
+            var pathLength = 0;
+            var searchedQ = new Queue();
+            var searchCount = 0;
+            var startPos = new Position(0, 0), endPos = new Position(0, 0);
+
+            initGrid();
+            function $(id) {
+                return document.getElementById(id);
+            }
+            function initGrid() {
+                pathLength = 0;
+                closedQ = new Queue();
+                X = parseInt($("txtLength").value) || 0;
+                Y = parseInt($("txtWidth").value) || 0;
+                var html = "<table id='mainTable' border='0' cellpadding='1' cellspacing='1' style='background:#999999;' ><tbody>";
+                for (var i = 0; i < X; i++) {
+                    html += "<tr>";
+                    grid[i] = [];
+                    for (var j = 0; j < Y; j++) {
+                        grid[i][j] = 1;
+                        html += "<td title='" + tdTitle + "' width='20' height='20' style='background:#ffffff;' onclick='setBlock(this," + i + "," + j + ")'> </td>";
+                    }
+                    html += "</tr>";
+                }
+                html += "</tbody></table>";
+                $("container").innerHTML = html;
+
+                var table = $('mainTable');
+                for (var i = 0; i < X; i++) {
+                    gridUI[i] = new Array(Y);
+                    for (var j = 0; j < Y; j++) {
+                        gridUI[i][j] = table.rows[i].cells[j];
+                    }
+                }
+
+                //print start and end position.
+                endPos = new Position(X - 1, Y - 1);
+                gridUI[startPos.X][startPos.Y].style.background = '#339933';
+                gridUI[endPos.X][endPos.Y].style.background = '#339933';
+                gridUI[startPos.X][startPos.Y].onclick = "return false;";
+                gridUI[endPos.X][endPos.Y].onclick = "return false;";
+                gridUI[startPos.X][startPos.Y].title = "start";
+                gridUI[endPos.X][endPos.Y].title = "end";
+            }
+
+            function setBlock(td, i, j) {
+                if (grid[i][j] == 1) {
+                    gridUI[i][j].style.background = '#666666';
+                    grid[i][j] = 0;//block
+                } else {
+                    gridUI[i][j].style.background = '#ffffff';
+                    grid[i][j] = 1;
+                }
+            }
+
+            function Position(x, y, prePOS) {
+                this.X = x;
+                this.Y = y;
+                this.PrePOS = prePOS;
+            }
+            Position.prototype.validate = function (nextPos) {
+                //1 在方格范围之内的，2 非障碍物，3 若当前pos的previous pos存在且，next pos不为previous pos
+                if (nextPos.X >= 0 && nextPos.X < X && nextPos.Y >= 0 && nextPos.Y < Y && grid[nextPos.X][nextPos.Y] == 1 && !searchedQ.has(nextPos)) {
+                    if (this.PrePOS && nextPos.X == this.PrePOS.X && nextPos.Y == this.PrePOS.Y) {
+                        return false;
+                    }
+                    return true;
+                }
+                return false;
+            }
+            Position.prototype.Down = function () {
+                var pos = new Position(this.X + 1, this.Y);
+                if (this.validate(pos)) {
+                    pos.PrePOS = this;
+                    return pos;
+                }
+                return undefined;
+            };
+            Position.prototype.Right = function () {
+                var pos = new Position(this.X, this.Y + 1);
+                if (this.validate(pos)) {
+                    pos.PrePOS = this;
+                    return pos;
+                }
+                return undefined;
+            };
+            Position.prototype.Up = function () {
+                var pos = new Position(this.X - 1, this.Y);
+                if (this.validate(pos)) {
+                    pos.PrePOS = this;
+                    return pos;
+                }
+                return undefined;
+            };
+            Position.prototype.Left = function () {
+                var pos = new Position(this.X, this.Y - 1);
+                if (this.validate(pos)) {
+                    pos.PrePOS = this;
+                    return pos;
+                }
+                return undefined;
+            };
+
+            function Queue() {
+                var me = this;
+                var _list = [];
+                this.length = function () {
+                    return _list.length;
+                };
+                this.push = function (position) {
+                    if (startPos.constructor.name != "Position")
+                        throw "Should be Position object.";
+                    _list.push(position);
+                    return me;
+                }
+                this.fetch = function () {
+                    return _list.shift();
+                }
+                this.pop = function () {
+                    return _list.pop();
+                }
+                this.has = function (position) {
+                    for (var i = 0, len = _list.length; i < len; i++) {
+                        if (_list[i].X == position.X && _list[i].Y == position.Y) {
+                            return _list[i];
+                        }
+                    }
+                    return undefined;
+                }
+                this.Item = _list;
+            }
+
+            function searchPath(POS) {
+                if (!POS) {
+                    return false;
+                }
+                searchCount++;
+                searchedQ.push(POS);
+                if ((POS.X == endPos.X && POS.Y == endPos.Y)) {
+                    return true;
+                } else {
+                    var found = false;
+                    var down = POS.Down();
+                    var right = POS.Right();
+                    var up = POS.Up();
+                    var left = POS.Left();
+
+                    if (!found && down) {
+                        found = searchPath(down)
+                    }
+                    if (!found && right) {
+                        found = searchPath(right);
+                    }
+                    if (!found && up) {
+                        found = searchPath(up);
+                    }
+                    if (!found && left) {
+                        found = searchPath(left);
+                    }
+                    if (!found) {
+                        grid[POS.X][POS.Y] = -1;
+                        return searchPath(POS.PrePOS);
+                    } else {
+                        return true;
+                    }
+                }
+            }
+            function paintSearchResult(closedQ) {
+                var path = [];
+                var lastPOS = closedQ.pop();
+                while (lastPOS.X != startPos.X || lastPOS.Y != startPos.Y) {
+                    path.push(gridUI[lastPOS.X][lastPOS.Y]);
+                    lastPOS = lastPOS.PrePOS;
+                    pathLength++;
+                }
+                var timer = window.setInterval(function () {
+                    var point = path.pop();
+                    if (point) point.style.background = "#339933";
+                    else clearInterval(timer);
+                }, 200);
+            }
+
+            function startSearch() {
+                if (searchPath(startPos)) {
+                    paintSearchResult(searchedQ);
+                    $("msg").innerHTML = "Found a path need: " + pathLength + " steps. Searched position count: " + searchCount;
+                } else {
+                    $("msg").innerHTML = "Not connected.";
+                }
+            }
+
+        </script>
+    </div>
+    <div>
+    </div>
+</body>
+
+</html>
