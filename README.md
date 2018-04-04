@@ -8,6 +8,7 @@
 1. Edit numbers or use the random numbers
 2. Click one of "sort" to sort the numbers
 3. Click "reset" to create random numbers
+reference : https://www.cnblogs.com/dushao/p/6004883.html
 ## dfs algorithm -> see dfs.html
 copy from : https://blog.csdn.net/zwseaman/article/details/7592855 <br>
 It will be rewritten when I have time
