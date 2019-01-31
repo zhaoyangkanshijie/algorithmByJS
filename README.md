@@ -1,17 +1,80 @@
 # algorithmByJS
-## shortest path algorithm -> see shortestPath.html
-1. If the random numbers can not satisfy your requirement,you can modify the numbers
-2. Click "start" and "end" to define the beginning point and the ending point
-3. Click "shortestPath" to draw the shortest path
-4. Click "clear" to clear the path
-## sort algorithm -> see sort.html
-1. Edit numbers or use the random numbers
-2. Click one of "sort" to sort the numbers
-3. Click "reset" to create random numbers <br>
-reference : https://www.cnblogs.com/dushao/p/6004883.html
-## dfs algorithm -> see dfs.html
-copy from : https://blog.csdn.net/zwseaman/article/details/7592855 <br>
-It will be rewritten when I have time
-## prim algorithm -> see prim.html
-copy from : https://blog.csdn.net/scargtt/article/details/71078275 <br>
-It will be rewritten when I have time
+
+## 最短路径算法dijkstra(shortestPath.html)
+### 运行方式
+1. 自动生成随机数或手动输入数
+2. 点击"start"，再点击起始方格，点击"end"，再点击结束方格，来定义起始和结束位置。
+3. 点击"shortestPath"，会画出最短路径。方格数字表示经过这格的距离，数字越大，距离越大。
+4. 点击"clear"会清除路线，然后可重新定义起始和结束位置。
+### 图例：
+![最短路径](shortestPath.gif)
+
+## 排序算法(sort.html)
+### 运行方式
+1. 自动生成随机数或手动输入数
+2. 点击其中一种排序算法，对数字进行排序
+3. 点击"reset"重置数据
+4. 感谢作者[杜少](https://www.cnblogs.com/dushao/p/6004883.html)
+### 图例：
+![最短路径](sort.gif)
+
+## 深度优先搜索(dfs.html)
+### 运行方式
+1. 设置格子长款个数，绘制表格
+2. 点击格子设置和取消障碍
+3. 点击"搜索路径"进行搜索
+4. 感谢作者[zwseaman](https://blog.csdn.net/zwseaman/article/details/7592855)
+### 图例：
+![最短路径](dfs.gif)
+
+## 最小生成树算法prim(prim.html)
+1. 点击"start"自动寻找出路
+2. 点击"reset"重置迷宫
+3. 感谢作者[欧阳蒜苗](https://blog.csdn.net/scargtt/article/details/71078275)
+### 图例：
+![最短路径](prim.gif)
+
+## 算法简介
+### 最短路径算法dijkstra
+* 准备信息
+1. 一共有vertex个点
+2. 起始点为第a个点，结束点为第b个点
+3. 把问题模型转化为：点与点之间距离的邻接矩阵adj[][]
+4. 记录起点到每个顶点的最短路径的信息数组dis[]
+5. 信息数组dis[]的每项信息对象msg，path文字记录起始点到每个点，value记录这段路径的距离，visit记录是否已经访问
+6. 定义最远距离为infinate
+
+* 邻接矩阵初始化(问题模型转化)
+1. 全部初始化为infinate
+2. 自身到自身距离为0，对角线为0
+3. 计算点到点的距离，非直连点距离记为infinate
+
+* 初始化信息数组
+1. 记录path为“va-->vi”
+2. 根据adj[a][i]记录value
+3. visit除自身点为true以外，其余全为false
+
+* 计算过程
+1. a找出最近直连点x，路径为pathAX
+
+具体操作为循环每一个**没访问过**的**直连**点，比较dis[i]得出最小值，并获得序号x，标记x已经访问
+
+2. x找出最近直连点y，路径为pathXY，如果有路径pathAX + pathXY < pathAY，则更新pathAY距离
+
+具体操作为循环每一个**没访问过**的**直连**点，如果dis[x] + adj[x][i] < dis[i]，更新dis[i]信息
+
+3. 循环以上过程，即每一个点，使得信息数组填充完备，其中dis[b]包含最短路径信息
+
+* 更多操作
+1. 可打印最短距离，经过的路径信息等
+
+* 思考
+1. 最短路径是 1维寻找最小数 的2维版本
+2. 1维寻找最小数可实现排序，路径也可以进行排序
+3. 3维的最短路径，只需计算出周围8个点的路径，坐标计算变为3维，其余思想不变
+
+### 排序算法
+
+### 深度优先搜索
+
+### 最小生成树算法prim
