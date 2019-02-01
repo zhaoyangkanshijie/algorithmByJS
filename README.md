@@ -399,14 +399,305 @@ let heapSort = (arr) => {
 * 不稳定
 
 #### 计数排序
+1. 思想
 
+把数存入数组索引，遍历数组即完成排序
+
+2. 复杂度
+* 时间：O(n+k)
+* 空间：O(n+k)
+
+3. 稳定性
+
+* 稳定
 
 #### 桶排序
+1. 概念
 
+* 桶的个数：按需定义
+* 桶的数据范围步长：(数组最大值-数组最小值)/桶个数
+* 数映射到哪个桶：floor((当前数-数组最小值)/步长)
+
+2. 思想
+
+把数映射到每个桶中，再对每个桶内的数据进行排序，排序方法可选择插入排序，最后把桶拼接在一起
+
+2. 复杂度
+* 时间：最优O(n+k)，最差O(n^2)，平均O(n+k)
+* 空间：O(n*k)
+
+3. 稳定性
+
+* 稳定(因为插入排序稳定)
 
 #### 基数排序
+1. 思想
 
+以十进制为例，有0-9十个桶，把个位数为x的数放入第x个桶，序号由小到大收集桶的数据，其它位数重复以上操作(每次操作完成都能保证那一位数的较大值能排在后面)，直至最大位数排完
+
+2. 操作
+```js
+let mod = 10;
+let dev = 1;
+for (let i = 0; i < maxDigit; i++ , dev *= 10, mod *= 10) {
+    for (let j = 0; j < arr.length; j++) {
+        let bucket = parseInt((arr[j] % mod) / dev);
+        if (counter[bucket] == null) {
+            counter[bucket] = [];
+        }
+        counter[bucket].push(arr[j]);
+    }
+    let pos = 0;
+    for (let j = 0; j < counter.length; j++) {
+        let value = null;
+        if (counter[j] != null) {
+            while ((value = counter[j].shift()) != null) {
+                arr[pos++] = value;
+            }
+        }
+    }
+}
+```
+
+3. 复杂度
+* 时间：O(d(n+r)) r为进制数(基数)，分配的时间复杂度为O（n）收集的的时间复杂度为O(radix)，分配和收集共需要distance趟
+
+* 空间：O(n+r)
+
+4. 稳定性
+
+* 稳定
 
 ### 深度优先搜索
+1. 思想
+
+一条道路走到黑，走不通就回到上一个分叉点，换一条路走
+
+2. 操作
+* 建立邻接矩阵，1表示可直达，0表示不可直达
+* 准备一个visit数组表示每个点是否访问
+* 循环邻接矩阵，从第一个点开始，对遇到的每一个没访问过的点进行深度优先搜索，形成递归，递归条件结束为这个点没有下一个点或下一个点已经被访问，结束条件为所有点被访问
+
+```C++
+void DFS(int v)
+{
+    int n=vertexNum;//顶点数目
+    if(v<0||v>=n) throw "位置出错";
+    cout<<vertex[v]<<" ";//输出顶点v
+    visited[v]=1;//被访问过
+    for(int j=0;j<n;j++)
+        if(visited[j]==0&&adj[v][j]==1)//没被访问过且存在边(v,j)
+            DFS(j);
+}
+```
+
+3. 复杂度
+时间：O(n^2)
+
+### 广度优先搜索
+1. 思想
+
+水波扩散
+
+2. 操作
+* 建立邻接矩阵，1表示可直达，0表示不可直达
+* 准备一个visit数组表示每个点是否访问
+* 准备一个队列来把新进来的数顶替旧的数
+* 准备一个数组记录被顶替的数
+* 循环邻接矩阵，从第一个点开始，进入队列，把第一个点取出放入数组，把第一个点的所有直连点放入队列，重复以上操作，直至所有点访问过或队列为空
+
+```C++
+void BFS(Graph G, void (*visit)(int v))
+{
+    int v = 0;
+    //初始化访问标记的数组
+    for (v = 0; v < G.vexnum; v++)
+    {
+        visited[v] = false;
+    }
+    //依次遍历整个图的结点
+    for (v = 0; v < G.vexnum; v++)
+    {
+        //如果v尚未访问，则访问 v
+        if  (!visited[v])
+        {
+            //把 v 顶点对应的数组下标处的元素置为真，代表已经访问了
+            visited[v] = true;
+            //然后v入队列，利用了队列的先进先出的性质
+            q.push(v);
+            //访问 v，打印处理
+            cout << q.back() << " ";
+            //队不为空时
+            while (!q.empty())
+            {
+                //队头元素出队,并把这个出队的元素置为 u，类似层序遍历
+                Graph *u = q.front();
+                q.pop();
+                //w为u的邻接顶点
+                for (int w = FirstAdjVex(G, u); w >= 0; w = NextAdjVex(G,u,w))
+                {
+                    //w为u的尚未访问的邻接顶点
+                    if (!visited[w])
+                    {
+                        visited[w] = true;
+                        //然后 w 入队列，利用了队列的先进先出的性质
+                        q.push(w);
+                        //访问 w，打印处理
+                        cout << q.back() << " ";
+                    }
+                }
+            }
+        }
+    }
+}
+```
+来源：[dashuai](https://www.cnblogs.com/kubixuesheng/p/4399705.html)
+
+3. 复杂度
+时间：O(n^2)
 
 ### 最小生成树算法prim
+1. 思想
+
+从第一点开始，寻找边最小的点连通为树，再从它们能直连到其它点中，寻找边最小的未访问过的点连通为树，直至所有点连在一起或所有点访问过
+
+2. 操作
+* 把图转化为邻接矩阵adj[][]
+* visit数组记录每个点的访问情况
+* lowcost数组记录记录每2个点间最小权值，初始化为第一个点到每个点的权值，不直连的记为infinate
+* pos记录最短边下标
+* 循环每一个点i，循环找出未访问过的最短边mindis(j)，点为j，标记j已访问，把j可直连的未访问过的点adj[j][x]与记录在案的每一个最小权值lowcost[x]比较，如果adj[j][x]较小，则刷新lowcost[x]
+* 把每次mindis(j)相加可求总最小权值
+
+```C++
+#include <iostream>
+#include <vector>
+using namespace std;
+
+//Prim算法实现
+void prim_test()
+{
+    int n;
+    cin >> n;
+    vector<vector<int> > A(n, vector<int>(n));
+    for(int i = 0; i < n ; ++i) {
+        for(int j = 0; j < n; ++j) {
+            cin >> A[i][j];
+        }
+    }
+
+    int pos, minimum;
+    int min_tree = 0;
+    //lowcost数组记录每2个点间最小权值，visited数组标记某点是否已访问
+    vector<int> visited, lowcost;
+    for (int i = 0; i < n; ++i) {
+        visited.push_back(0);    //初始化为0，表示都没加入
+    }
+    visited[0] = 1;   //最小生成树从第一个顶点开始
+    for (int i = 0; i < n; ++i) {
+        lowcost.push_back(A[0][i]);    //权值初始化为0
+    }
+
+    for (int i = 0; i < n; ++i) {    //枚举n个顶点
+        minimum = max_int;
+        for (int j = 0; j < n; ++j) {    //找到最小权边对应顶点
+            if(!visited[j] && minimum > lowcost[j]) {
+                minimum = lowcost[j];
+                pos = j;
+            }
+        }
+        if (minimum == max_int)    //如果min = max_int表示已经不再有点可以加入最小生成树中
+            break;
+        min_tree += minimum;
+        visited[pos] = 1;     //加入最小生成树中
+        for (int j = 0; j < n; ++j) {
+            if(!visited[j] && lowcost[j] > A[pos][j]) lowcost[j] = A[pos][j];   //更新可更新边的权值
+        }
+    }
+
+    cout << min_tree << endl;
+}
+
+int main(void)
+{
+    prim_test();
+
+    return 0;
+}
+```
+来源：[JoshuaMK](https://www.cnblogs.com/JoshuaMK/p/prim_kruskal.html)
+
+### 最小生成树算法Kruskal
+
+1. 思想
+
+对所有权值进行从小到大排序，每次选取最小的权值，如果和已有点集构成环则跳过，否则加到该点集中。
+
+2. 操作
+
+```C++
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+//并查集实现最小生成树
+vector<int> u, v, weights, w_r, father;
+int mycmp(int i, int j)
+{
+    return weights[i] < weights[j];
+}
+int find(int x)
+{
+    return father[x] == x ? x : father[x] = find(father[x]);
+}
+void kruskal_test()
+{
+    int n;
+    cin >> n;
+    vector<vector<int> > A(n, vector<int>(n));
+    for(int i = 0; i < n; ++i) {
+        for (int j = 0; j < n; ++j) {
+            cin >> A[i][j];
+        }
+    }
+
+    int edges = 0;
+    // 共计n*(n - 1)/2条边
+    for (int i = 0; i < n - 1; ++i) {
+        for (int j = i + 1; j < n; ++j) {
+            u.push_back(i);
+            v.push_back(j);
+            weights.push_back(A[i][j]);
+            w_r.push_back(edges++);
+        }
+    }
+    for (int i = 0; i < n; ++i) {
+        father.push_back(i);    // 记录n个节点的根节点，初始化为各自本身
+    }
+
+    sort(w_r.begin(), w_r.end(), mycmp); //以weight的大小来对索引值进行排序
+
+    int min_tree = 0, cnt = 0;
+    for (int i = 0; i < edges; ++i) {
+        int e = w_r[i];    //e代表排序后的权值的索引
+        int x = find(u[e]), y = find(v[e]);
+        //x不等于y表示u[e]和v[e]两个节点没有公共根节点，可以合并
+        if (x != y) {
+            min_tree += weights[e];
+            father[x] = y;
+            ++cnt;
+        }
+    }
+    if (cnt < n - 1) min_tree = 0;
+    cout << min_tree << endl;
+}
+
+int main(void)
+{
+
+    kruskal_test();
+
+    return 0;
+}
+```
