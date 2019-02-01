@@ -109,7 +109,7 @@ arr[i] = temp;//将temp放在最终位置
 
 3. 复杂度
 
-* 时间：最优O(nlogn)，最差O(n^2)，平均O(nlogn)
+* 时间：最优O(nlog2n)，最差O(n^2)，平均O(nlog2n)
 * 空间：最优O(logn)每一次都平分数组的情况，最差O(n)退化为冒泡排序的情况
 
 4. 稳定性
@@ -123,22 +123,280 @@ arr[i] = temp;//将temp放在最终位置
 * 数组长度小到指定长度，用插入排序
 
 #### 冒泡排序
+1. 思想
 
+相邻元素两两对比，把较大数放后面
+
+2. 操作
+```js
+for (let i = 0; i < len; i++) {
+    for (let j = 0; j < len - 1 - i; j++) {
+        if (arr[j] > arr[j+1]) {        //相邻元素两两对比
+            let temp = arr[j+1];        //元素交换
+            arr[j+1] = arr[j];
+            arr[j] = temp;
+        }
+    }
+}
+```
+
+3. 复杂度
+* 时间：最优O(n)，最差O(n^2)，平均O(n^2)
+* 空间：O(1)
+
+4. 稳定性
+
+* 稳定
 
 #### 选择排序
+1. 思想
 
+随着索引移动，不断寻找最小的数，与索引处元素交换
+
+2. 操作
+```js
+for (let i = 0; i < len - 1; i++) {
+    minIndex = i;
+    for (let j = i + 1; j < len; j++) {
+        if (arr[j] < arr[minIndex]) {     //寻找最小的数
+            minIndex = j;                 //将最小数的索引保存
+        }
+    }
+    temp = arr[i];
+    arr[i] = arr[minIndex];
+    arr[minIndex] = temp;
+}
+```
+
+3. 复杂度
+* 时间：最优O(n)，最差O(n^2)，平均O(n^2)
+* 空间：O(1)
+
+4. 稳定性
+
+* 不稳定
 
 #### 插入排序
+1. 思想
 
+有一个已经有序的数据序列，要求在这个已经排好的数据序列中插入一个数，但要求插入后此数据序列仍然有序
+
+2. 操作
+```js
+for (let i = 1; i < len; i++) {
+    preIndex = i - 1;
+    current = arr[i];
+    while (preIndex >= 0 && arr[preIndex] > current) {
+        arr[preIndex + 1] = arr[preIndex];
+        preIndex--;
+    }
+    arr[preIndex + 1] = current;
+}
+```
+
+3. 复杂度
+* 时间：最优O(n)，最差O(n^2)，平均O(n^2)
+* 空间：O(1)
+
+4. 稳定性
+
+* 稳定
 
 #### 希尔排序
+1. 思想
 
+递减间隔分组插入排序
+
+2. 操作
+```js
+while(gap>=1){  
+    for(let i =gap;i<arr.length;i++){  
+        let j,temp=arr[i];  
+        for(j=i-gap;j>=0&&temp<arr[j];j=j-gap){  
+            arr[j+gap]=arr[j];  
+        }  
+        arr[j+gap]=temp;  
+    }  
+    gap=Math.floor(gap/2);  
+}
+```
+
+3. 复杂度
+* 时间：最优O(nlog2n)，最差O(n^2)，平均O(n^1.5)
+* 空间：O(1)
+
+4. 稳定性
+
+* 不稳定
 
 #### 归并排序
+1. 思想
 
+相当于二叉树，每个根节点表示一个数，两两归并排序到其上一个节点，直到根节点完全排好
+
+2. 操作
+```js
+let mergeSort = (arr) => {//采用自上而下的递归方法
+    // 设置终止的条件，
+    if (arr.length < 2) {
+        return arr;
+    }
+    //设立中间值
+    let middle = parseInt(arr.length / 2);
+    //第1个和middle个之间为左子列
+    let left = arr.slice(0, middle);
+    //第middle+1到最后为右子列
+    let right = arr.slice(middle);
+    if (left == "undefined" && right == "undefined") {
+        return false;
+    }
+    return merge(mergeSort(left), mergeSort(right));
+}
+
+let merge = (left, right) => {
+    let result = [];
+
+    while (left.length && right.length) {
+        if (left[0] <= right[0]) {
+            //把left的左子树推出一个，然后push进result数组里
+            result.push(left.shift());
+        } else {
+            //把right的右子树推出一个，然后push进result数组里
+            result.push(right.shift());
+        }
+    }
+    //经过上面一次循环，只能左子列或右子列一个不为空，或者都为空
+    while (left.length) {
+        result.push(left.shift());
+    }
+    while (right.length) {
+        result.push(right.shift());
+    }
+    return result;
+}
+```
+
+3. 操作
+
+* 细节排序方法
+
+对比左右两个有序序列，只需比较两边第一个元素，把较小的取出并放入新数组，使归并数组有序
+
+* 结束递归条件
+
+数组长度为1(二叉树分到根节点)
+
+4. 复杂度
+* 时间：最优O(nlog2n)，最差O(nlog2n)，平均O(nlog2n)
+* 空间：O(n)
+
+5. 稳定性
+
+* 稳定
+
+6. 优化
+
+* TimSort
+
+检测序列中的天然有序子段，若检测到严格降序子段则翻转序列为升序子段，在最好情况下无论升序还是降序都可以使时间复杂度降至为O(n)
+
+* 原地归并
+
+原本需要一个辅助数组，所以归并排序的空间复杂度是O(n)，优化后可以进行原地排序，额外空间为O(1)。
+
+核心思想是“交换两段相邻内存块”。
+
+具体操作：起始左右索引为各自的第一个元素，比较两边索引，不产生逆序，则两边索引向前走，否则，把右边产生逆序的数据段插入到左边索引之前，直到其中一个数组遍历完成。
+
+![原地归并](mergeSortOpt.png)
+
+7. 其它应用
+
+* 逆序数对
 
 #### 堆排序
+1. 概念
 
+堆实际上是一个完全二叉树，并且其左右子节点都不大于父节点（父节点大于子节点）
+最大堆是父节点>左节点>右节点
+
+父节点索引为i，其左子节点索引为2i+1，其右子节点索引为2i+2
+
+最后一个父节点的索引为floor(length/2-1)
+
+2. 思想
+
+从后往前遍历一次每个父节点来构造堆(父节点>子节点)，遍历后根节点(0)一定是最大的数，与最后一个节点(length-1)交换位置，数组长度-1，接下来的操作不影响最后一个元素，重复以上操作。
+
+3. 操作
+
+```js
+let len;    //因为声明的多个函数都需要数据长度，所以把len设置成为全局变量
+
+let buildMaxHeap = (arr) => {   //建立大顶堆
+    len = arr.length;
+    for (let i = Math.floor(len / 2 - 1); i >= 0; i--) {
+        heapify(arr, i);
+    }
+}
+
+let heapify = (arr, i) => {     //堆调整
+    let left = 2 * i + 1,//左节点
+        right = 2 * i + 2,//右节点
+        largest = i;//父节点
+
+    if (left < len && arr[left] > arr[largest]) {
+        largest = left;
+    }
+
+    if (right < len && arr[right] > arr[largest]) {
+        largest = right;
+    }
+
+    if (largest != i) {
+        swap(arr, i, largest);
+        heapify(arr, largest);//其子节点变父节点，再次调整
+    }
+}
+
+let swap = (arr, i, j) => {
+    let temp = arr[i];
+    arr[i] = arr[j];
+    arr[j] = temp;
+}
+
+let heapSort = (arr) => {
+    //初始化，i从最後一个父节点开始调整
+    buildMaxHeap(arr);
+    //先将第一个元素和已经排好的元素前一位做交换，再从新调整(刚调整的元素之前的元素)，直到排序完毕
+    for (let i = arr.length - 1; i > 0; i--) {
+        swap(arr, 0, i);
+        len--;
+        heapify(arr, 0);//从根节点开始递归
+    }
+    return arr;
+}
+```
+
+* 处理数组越界
+
+在堆调整时，需要判断左右节点索引是否超过要处理的长度
+
+* 初始化和重复操作
+
+初始化建立堆，使父节点>子节点，后形成循环过程：交换数值，长度减一，根节点调整堆(由于堆性质，每次比较3个数，即可把最大数调至父节点，无需考虑子孙节点比父节点大)。
+
+* 为什么不一开始就每次建立堆，交换，然后长度减一？
+
+这样做和选择排序，每次找到最大数，放到最后的操作一样了
+
+4. 复杂度
+* 时间：初始化堆O(n)，调整堆(nlog2n)，总体O(nlog2n)
+* 空间：O(1)
+
+5. 稳定性
+
+* 不稳定
 
 #### 计数排序
 
