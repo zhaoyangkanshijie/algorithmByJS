@@ -631,73 +631,128 @@ int main(void)
 
 1. 思想
 
-对所有权值进行从小到大排序，每次选取最小的权值，如果和已有点集构成环则跳过，否则加到该点集中。
+对所有权值进行从小到大排序，每次选取最小的权值，如果和已有点集构成环则跳过(通过并查集检查)，否则加到该点集中。
 
 2. 操作
+* 根据图建立类，记录图信息，点a，点b，ab权值,并按ab权值升序排序
+* 初始化并查集father[i]=i
+* 循环每一个点，寻找每一个点在并查集中的根，判断的条件为如果father[i]=i它就是根，否则就让i =father[i]，向上寻找，直到其相等
+* 如果点同源，则跳过,否则a和b不同源，则father[b]=a，那么b就挂载在a下
 
 ```C++
-#include <iostream>
-#include <vector>
-#include <algorithm>
-using namespace std;
-
-//并查集实现最小生成树
-vector<int> u, v, weights, w_r, father;
-int mycmp(int i, int j)
+#include <stdio.h>
+#include <stdlib.h>
+#define Max 50
+typedef struct road *Road;
+typedef struct road
 {
-    return weights[i] < weights[j];
+	int a , b;
+	int w;
+}road;
+ 
+typedef struct graph *Graph;
+typedef struct graph
+{
+	int e , n;
+	Road data;
+}graph;
+ 
+Graph initGraph(int m , int n)
+{
+	Graph g = (Graph)malloc(sizeof(graph));
+	g->n = m;
+	g->e = n;
+	g->data = (Road)malloc(sizeof(road) * (g->e+1));
+	return g;
 }
-int find(int x)
+ 
+void create(Graph g)
 {
-    return father[x] == x ? x : father[x] = find(father[x]);
+	int i;
+	for(i = 1 ; i <= g->e ; i++)
+	{
+		int x , y, w;
+		scanf("%d %d %d",&x,&y,&w);
+		if(x < y)
+		{
+			g->data[i].a = x;
+			g->data[i].b = y;
+		}
+		else
+		{
+			g->data[i].a = y;
+			g->data[i].b = x;
+		}
+		g->data[i].w = w;
+	}
 }
-void kruskal_test()
+ 
+int getRoot(int v[], int x)
 {
-    int n;
-    cin >> n;
-    vector<vector<int> > A(n, vector<int>(n));
-    for(int i = 0; i < n; ++i) {
-        for (int j = 0; j < n; ++j) {
-            cin >> A[i][j];
-        }
-    }
-
-    int edges = 0;
-    // 共计n*(n - 1)/2条边
-    for (int i = 0; i < n - 1; ++i) {
-        for (int j = i + 1; j < n; ++j) {
-            u.push_back(i);
-            v.push_back(j);
-            weights.push_back(A[i][j]);
-            w_r.push_back(edges++);
-        }
-    }
-    for (int i = 0; i < n; ++i) {
-        father.push_back(i);    // 记录n个节点的根节点，初始化为各自本身
-    }
-
-    sort(w_r.begin(), w_r.end(), mycmp); //以weight的大小来对索引值进行排序
-
-    int min_tree = 0, cnt = 0;
-    for (int i = 0; i < edges; ++i) {
-        int e = w_r[i];    //e代表排序后的权值的索引
-        int x = find(u[e]), y = find(v[e]);
-        //x不等于y表示u[e]和v[e]两个节点没有公共根节点，可以合并
-        if (x != y) {
-            min_tree += weights[e];
-            father[x] = y;
-            ++cnt;
-        }
-    }
-    if (cnt < n - 1) min_tree = 0;
-    cout << min_tree << endl;
+	while(v[x] != x)
+	{
+		x = v[x];
+	}
+	return x;
 }
-
-int main(void)
+ 
+void sort(Road data, int n)
 {
-
-    kruskal_test();
-
-    return 0;
+	int i , j;
+	for(i = 1 ; i <= n-1 ; i++)
+	{
+		for(j = 1 ; j <= n-i ; j++)
+		{
+			if(data[j].w > data[j+1].w)
+			{
+				road t = data[j];
+				data[j] = data[j+1];
+				data[j+1] = t;
+			}
+		}
+	}
+}
+ 
+int Kruskal(Graph g)
+{
+	int sum = 0;
+	//并查集
+	int v[Max];
+	int i;
+	//init
+	for(i = 1 ; i <= g->n ; i++)
+	{
+		v[i] = i;
+	}
+	sort(g->data , g->e);
+	//main
+	for(i = 1 ; i <= g->e ; i++)
+	{
+		int a , b;
+		a = getRoot(v,g->data[i].a);
+		b = getRoot(v,g->data[i].b);
+		if(a != b)
+		{
+			v[a] = b;
+			sum += g->data[i].w;
+		}
+	}
+	return sum;
+}
+ 
+int main()
+{
+	int m , n , id = 1;
+	while(scanf("%d %d",&m,&n) != EOF)
+	{
+		int r , i;
+		Graph g = initGraph(m,n);
+		create(g);
+		r = Kruskal(g);
+		printf("Case %d:%d\n",id++,r);
+		free(g);
+	}
+	return 0;
 }
 ```
+来源：[mgsky1](https://blog.csdn.net/mgsky1/article/details/77840286)
