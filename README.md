@@ -14,7 +14,7 @@
 1. 自动生成随机数或手动输入数
 2. 点击其中一种排序算法，对数字进行排序
 3. 点击"reset"重置数据
-4. 感谢作者[杜少](https://www.cnblogs.com/dushao/p/6004883.html)
+4. 感谢作者[杜少](https://www.cnblogs.com/dushao/p/6004883.html)、[凯尔宝宝](https://blog.csdn.net/xuyangxinlei/article/details/81062015)
 ### 图例：
 ![最短路径](sort.gif)
 
@@ -118,8 +118,118 @@ arr[i] = temp;//将temp放在最终位置
 
 5. 优化
 
-* 任意基准：第一个数与随机一个数交换位置，再把第一个数作为主元
-* 三数(左中右)取中值作为主元
+* 快速排序的多种写法
+    * 填充法：元素比较基准值，把元素值填入当前位置
+    ```js
+        let quickSort = (arr, l, r) => {
+            let pivot, left = l, right = r;
+            if (left < right) {//避免栈溢出风险
+                pivot = arr[left];
+                while (left != right) {
+                    while (left < right && arr[right] > pivot) {
+                        right--;
+                    }
+                    if (left < right) {
+                        arr[left] = arr[right];
+                        left++;
+                    }
+                    while (left < right && arr[left] < pivot) {
+                        left++;
+                    }
+                    if (left < right) {
+                        arr[right] = arr[left];
+                        right--;
+                    }
+                }
+                arr[left] = pivot;
+                quickSort(arr, l, left - 1);
+                quickSort(arr, left + 1, r);
+            }
+        }
+    ```
+    * 交换法：元素比较基准值左右均完成后，交换左右位置
+    ```js
+        let quickSort = (arr, l, r) => {
+            if(l < r){
+                var pivot = arr[l], left = l, right = r;
+                while(left < right){
+                    while(left < right && arr[right] >= pivot){
+                        right--;
+                    }
+                    while (left < right && arr[left] <= pivot) {
+                        left++;
+                    }
+                    if(left<right){
+                        let tmp = arr[left];
+                        arr[left] = arr[right];
+                        arr[right] = tmp;
+                    }
+                }
+                let tmp2 = arr[left];
+                arr[left]  = arr[l];
+                arr[l] = tmp2;
+
+                quickSort(arr, l, left - 1);
+                quickSort(arr, left + 1, r);
+            }
+        }
+    ```
+    * 非递归法：解决数据量大导致栈溢出的问题，因此把[left,right]保存到数组
+    ```js
+    let quickSort = function(num, left, right) {
+        let list = [[left, right]]; // 将[left,right]存入数组中，类似于递归入栈
+        while (list.length > 0) { // 若list不为空，循环弹出list最后一个数组进行快排
+            let now = list.pop(); // 弹出list末尾。(也可用list.shift()取出list第一个数组，但在数据量较大时，这种方式效率较低)
+            if (now[0] >= now[1]) { // 若左右指针相遇，待排序数组长度小宇1，则无需进行快排(注意不能写成now[0]==now[1]，这里now[0]是有可能大于now[1]的
+                continue;
+            }
+            let i = now[0], j = now[1], flag = now[0]; // 以下与递归方法相同，请参考上面的递归详解
+            while (i < j) {
+                while (num[j] >= num[flag] && j > flag) j--;
+                if (i >= j) {
+                    break;
+                }
+                while (num[i] <= num[flag] && i < j) i++;
+                let temp = num[flag];
+                num[flag] = num[j];
+                num[j] = num[i];
+                num[i] = temp;
+                flag = i;
+            }
+            list.push([now[0], flag - 1]); // 将flag左边数组作为待排序数组，只需将左右指针放入list即可。
+            list.push([flag + 1, now[1]]); // 将flag右边数组作为待排序数组，只需将左右指针放入list即可。
+        }
+    }
+    ```
+
+* 任意基准：第一个数与随机一个数交换位置，再把第一个数作为主元，其余算法同理
+* 三数(左中右)取中值作为主元：第一个数、中间数、末尾数取排第二大的数与第一个数交换位置，再把第一个数作为主元，其余算法同理
+```js
+let GetMid = (array, left, right) =>
+{
+	var mid = left + ((right - left) / 2);
+
+	if (array[left] <= array[right])
+	{
+		if (array[mid] < array[left])
+			return left;
+		else if (array[mid] > array[right])
+			return right;
+		else
+			return mid;
+	}
+	else
+	{
+		if (array[mid] > array[left])
+			return left;
+		else if (array[mid] < array[right])
+			return right;
+		else
+			return mid;
+	}
+
+}
+```
 * 数组长度小到指定长度，用插入排序
 
 #### 冒泡排序
