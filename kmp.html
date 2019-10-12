@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+<head>
+    <title>KMP Algorithm</title>
+    <script src="jquery-1.12.3.min.js"></script>
+</head>
+<body>
+    <script>
+        let getNext = function (str) {
+            let p = str.split('');
+            let next = new Array(str.length);
+            next[0] = -1;
+            let j = 0, k = -1;
+            while (j < p.length - 1) {
+                if (k == -1 || p[j] == p[k]) {
+                    if (p[++j] == p[++k]) { // 当两个字符相等时要跳过
+                        next[j] = next[k];
+                    }
+                    else {
+                        next[j] = k;
+                    }
+                }
+                else {
+                    k = next[k];
+                }
+            }
+            return next;
+        }
+        let KMP = function (ts, ps) {
+            let t = ts.split('');
+            let p = ps.split('');
+            let i = 0,j = 0; // 主串的位置
+            let next = getNext(ps);
+            while (i < t.length && j < p.length) {
+                if (j == -1 || t[i] == p[j]) { // 当j为-1时，要移动的是i，当然j也要归0
+                    i++;
+                    j++;
+                } else {
+                    // i不需要回溯了
+                    // i = i - j + 1;
+                    j = next[j]; // j回到指定位置
+                }
+            }
+            if (j == p.length) {
+                return i - j;
+            } else {
+                return -1;
+            }
+        }
+        $(()=>{
+            $("#result").html(KMP($("#main").val(),$("#search").val()));
+            $("#main").on("input",function(){
+                $("#result").html(KMP($("#main").val(),$("#search").val()));
+            });
+            $("#search").on("input",function(){
+                $("#result").html(KMP($("#main").val(),$("#search").val()));
+            });
+        });
+    </script>
+    <input id="main" type="text" placeholder="主串" value="abcbabcabacbabcbacbbac" />
+    <br>
+    <input id="search" type="text" placeholder="搜索串" value="bcab" />
+    <h3>indexOf:</h3>
+    <p id="result">null</p>
+</body>
+</html>

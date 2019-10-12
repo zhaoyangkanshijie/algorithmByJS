@@ -34,6 +34,12 @@
 ### 图例：
 ![最短路径](prim.gif)
 
+## KMP算法(kmp.html)
+1. 修改input值
+3. 感谢作者[0giant](https://www.cnblogs.com/LUO77/p/5603893.html)
+### 图例：
+![KMP算法](kmp.gif)
+
 ## 算法简介
 ### 最短路径算法dijkstra
 * 准备信息
@@ -866,3 +872,86 @@ int main()
 }
 ```
 来源：[mgsky1](https://blog.csdn.net/mgsky1/article/details/77840286)
+
+### KMP算法
+1. 思想
+* 朴素算法
+    子串在第一位与主串开始比较，在第j位与主串失配，把子串后移一位，继续重新比较。
+    复杂度O(m*n)
+
+* 改进算法
+    失配时，不要浪费前j-1位匹配成功的资源，子串向前移动到子串前后缀重复的地方，如果重复后的子串和主串不匹配，则在不匹配的下一位重新比较。
+
+2. 操作
+* 求next数组(子串向前移动到子串前后缀重复的地方) 
+```C++
+public static int[] getNext(String ps) {
+    char[] p = ps.toCharArray();
+    int[] next = new int[p.length];
+    next[0] = -1;
+    int j = 0;
+    int k = -1;
+    while (j < p.length - 1) {
+        if (k == -1 || p[j] == p[k]) {
+            next[++j] = ++k;
+        } else {
+            k = next[k];
+        }
+    }
+    return next;
+}
+```
+* 求next数组(如果重复后的子串和主串不匹配，则在不匹配的下一位重新比较) 
+```C++
+public static int[] getNext(String ps) {
+    char[] p = ps.toCharArray();
+    int[] next = new int[p.length];
+    next[0] = -1;
+    int j = 0;
+    int k = -1;
+    while (j < p.length - 1) {
+        if (k == -1 || p[j] == p[k]) {
+            if (p[++j] == p[++k]) { // 当两个字符相等时要跳过
+                next[j] = next[k];
+            } else {
+                next[j] = k;
+            }
+        } else {
+            k = next[k];
+        }
+    }
+    return next;
+}
+```
+* KMP
+```C++
+public static int KMP(String ts, String ps) {
+    char[] t = ts.toCharArray();
+    char[] p = ps.toCharArray();
+    int i = 0; // 主串的位置
+    int j = 0; // 模式串的位置
+    int[] next = getNext(ps);
+    while (i < t.length && j < p.length) {
+    if (j == -1 || t[i] == p[j]) { // 当j为-1时，要移动的是i，当然j也要归0
+        i++;
+        j++;
+    } else {
+        // i不需要回溯了
+        // i = i - j + 1;
+        j = next[j]; // j回到指定位置
+    }
+    }
+    if (j == p.length) {
+    return i - j;
+    } else {
+    return -1;
+    }
+}
+```
+
+来源：
+1. [KMP算法&next数组总结](https://www.cnblogs.com/LUO77/p/5603893.html)
+2. [[KMP算法]最简单通俗易懂求next数组的方法](https://blog.csdn.net/hi25779/article/details/89504487)
+3. [（算法）通俗易懂的字符串匹配KMP算法及求next值算法](https://blog.csdn.net/qq_37969433/article/details/82947411)
+4. [很详尽KMP算法（厉害）](https://www.cnblogs.com/ZuoAndFutureGirl/p/9028287.html)
+
