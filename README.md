@@ -955,3 +955,194 @@ public static int KMP(String ts, String ps) {
 3. [（算法）通俗易懂的字符串匹配KMP算法及求next值算法](https://blog.csdn.net/qq_37969433/article/details/82947411)
 4. [很详尽KMP算法（厉害）](https://www.cnblogs.com/ZuoAndFutureGirl/p/9028287.html)
 
+### 二叉树
+1. 储存方式
+* 数组：按完全二叉树层次遍历1-n填入数组，在不完全的地方填null
+
+    ["a", "b", "c", "d", "e", "f", null, "g", null, null, null, "h"]
+
+* 链表：节点对象：值、左、右、（父）、插入左方法、插入右方法
+
+来源：[二叉树的存储方式和遍历方式](https://blog.csdn.net/simplehap/article/details/63259845)
+
+2. 节点位置关系
+
+按数组关系
+
+* 父：i，左：2i+1，右：2i+2
+* 每层最左：2^i，每层最右：2^(i+1)-1
+
+3. 遍历方法
+* 前序遍历(深度优先搜索)：中左右
+* 中序遍历：左中右
+* 后序遍历：左右中
+* 层序遍历(广度优先搜索)：队列
+
+来源：[关于二叉树的前序、中序、后序三种遍历](https://blog.csdn.net/qq_33243189/article/details/80222629)
+
+4. 代码示例
+```js
+//二叉树节点对象
+function binaryTreeNode(data = null, parent = null, left = null, right = null) {
+    this.data = data;
+    this.parent = parent;
+    this.left = left;
+    this.right = right;
+    this.appendLeft = function (node) {
+        this.left = node;
+        node.parent = this;
+    }
+    this.appendRight = function (node) {
+        this.right = node;
+        node.parent = this;
+    }
+}
+//储存方式：数组转链表
+function arrayBinaryTreeToLinkBinaryTree(arrayBinaryTree) {
+    //console.log(arrayBinaryTree)
+    var len = arrayBinaryTree.length;
+    var root = null;
+    var nodeArray = new Array(len).fill(null);
+    //console.log(len,Math.floor(len / 2));
+    //只需遍历一半即可生成整棵树
+    for (var i = 0; i < Math.floor(len / 2); i++) {
+        //console.log('i:' + i);
+        if (arrayBinaryTree[i] != null) {
+            if (nodeArray[i] == null) {
+                nodeArray[i] = new binaryTreeNode({ key: arrayBinaryTree[i], value: i });
+                //console.log('create node ' + arrayBinaryTree[i]);
+            }
+            //父子位置关系：i，2i+1,2i+2
+            //console.log('2 * i + 1:' + (2 * i + 1) + ',len:'+len);
+            if (2 * i + 1 <= len && arrayBinaryTree[2 * i + 1] != null) {
+                if (nodeArray[2 * i + 1] == null) {
+                    nodeArray[2 * i + 1] = new binaryTreeNode({ key: arrayBinaryTree[2 * i + 1], value: 2 * i + 1 });
+                    //console.log('create node ' + arrayBinaryTree[2 * i + 1]);
+                }
+                nodeArray[i].appendLeft(nodeArray[2 * i + 1]);
+                //console.log('node ' + nodeArray[i].data.key + ' append left node ' + arrayBinaryTree[2 * i + 1]);
+            }
+            //console.log('2 * i + 2:' + (2 * i + 2) + ',len:' + len);
+            if (2 * i + 2 <= len && arrayBinaryTree[2 * i + 2] != null) {
+                if (nodeArray[2 * i + 2] == null) {
+                    nodeArray[2 * i + 2] = new binaryTreeNode({ key: arrayBinaryTree[2 * i + 2], value: 2 * i + 2 });
+                    //console.log('create node ' + arrayBinaryTree[2 * i + 2]);
+                }
+                nodeArray[i].appendRight(nodeArray[2 * i + 2]);
+                //console.log('node ' + nodeArray[i].data.key + ' append right node ' + arrayBinaryTree[2 * i + 2]);
+            }
+        }
+        if (i == 0) {
+            root = nodeArray[0];
+            if (root == null) {
+                return null;
+            }
+        }
+    }
+    //去除原数组null值，使储存空间不再连续
+    nodeArray = nodeArray.filter(s => s);
+    //console.log(nodeArray);
+    return root;
+}
+//储存方式：链表转数组
+function linkBinaryTreeToArrayBinaryTree(root) {
+    //console.log('root:',root);
+    var queue = [];
+    var arrayBinaryTree = [];
+    if (root != null) {
+        queue.push(root);
+        arrayBinaryTree.push(root.data.key);
+    }
+    else {
+        return [];
+    }
+    //广度优先转换
+    //console.log('queueInit:', queue);
+    while (queue.length > 0) {
+        //console.log('queue:',queue[0],queue.length);
+        if (queue[0].left != null) {
+            arrayBinaryTree.push(queue[0].left.data.key);
+            //console.log('left:', queue[0].left);
+            queue.push(queue[0].left);
+        }
+        else {
+            arrayBinaryTree.push(null);
+        }
+        if (queue[0].right != null) {
+            arrayBinaryTree.push(queue[0].right.data.key);
+            //console.log('right:', queue[0].right);
+            queue.push(queue[0].right);
+        }
+        else {
+            arrayBinaryTree.push(null);
+        }
+        queue.shift();
+        //console.log(arrayBinaryTree);
+    }
+    //console.log(arrayBinaryTree);
+    //去除末尾没必要的null值
+    var lastNotNull = -1;
+    for (var len = arrayBinaryTree.length - 1; len >= 0; len--) {
+        if (arrayBinaryTree[len] != null) {
+            lastNotNull = len;
+            //console.log(len);
+            break;
+        }
+    }
+    return arrayBinaryTree.slice(0, len+1);
+}
+//前序遍历
+var preOrder = [];
+function preOrderLoop(root) {
+    if (root == null)
+    {
+        return;
+    }
+    //console.log(root.data.key);
+    preOrder.push(root.data.key);
+    preOrderLoop(root.left);
+    preOrderLoop(root.right);
+}
+//中序遍历
+var inOrder = [];
+function inOrderLoop(root) {
+    if (root == null) {
+        return;
+    }
+    inOrderLoop(root.left);
+    //console.log(root.data.key);
+    inOrder.push(root.data.key);
+    inOrderLoop(root.right);
+}
+//后序遍历
+var postOrder = [];
+function postOrderLoop(root) {
+    if (root == null) {
+        return;
+    }
+    postOrderLoop(root.left);
+    postOrderLoop(root.right);
+    //console.log(root.data.key);
+    postOrder.push(root.data.key);
+}
+$(function () {
+    var arrayTree = ['a', 'b', 'c', 'd', 'e', 'f', null, 'g', null, null, null, 'h'];
+    var linktree = arrayBinaryTreeToLinkBinaryTree(arrayTree);
+    console.log(linktree);
+
+    preOrder = [];
+    preOrderLoop(linktree);
+    console.log(preOrder);
+
+    inOrder = [];
+    inOrderLoop(linktree);
+    console.log(inOrder);
+    
+    postOrder = [];
+    postOrderLoop(linktree);
+    console.log(postOrder);
+
+    var arrayTree2 = linkBinaryTreeToArrayBinaryTree(linktree);
+    console.log(arrayTree2);
+});
+```
