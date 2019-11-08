@@ -352,43 +352,39 @@ while(gap>=1){
 
 2. 操作
 ```js
-let mergeSort = (arr) => {//采用自上而下的递归方法
-    // 设置终止的条件，
-    if (arr.length < 2) {
+function mergeSort(arr) {
+    if(arr.length < 2)
         return arr;
-    }
-    //设立中间值
-    let middle = parseInt(arr.length / 2);
-    //第1个和middle个之间为左子列
-    let left = arr.slice(0, middle);
-    //第middle+1到最后为右子列
-    let right = arr.slice(middle);
-    if (left == "undefined" && right == "undefined") {
-        return false;
-    }
-    return merge(mergeSort(left), mergeSort(right));
+
+    let middle = Math.floor(arr.length / 2);
+    let arrLeft = arr.slice(0, middle);
+    let arrRight = arr.slice(middle);
+
+    return merge(mergeSort(arrLeft), mergeSort(arrRight));
+
 }
 
-let merge = (left, right) => {
-    let result = [];
-
-    while (left.length && right.length) {
-        if (left[0] <= right[0]) {
-            //把left的左子树推出一个，然后push进result数组里
-            result.push(left.shift());
+function merge(arrLeft, arrRight) {
+    // 这里arrLeft和arrRight都是排好序的数组
+    let i = 0;
+    let j = 0;
+    let newArr = [];
+    while(i<arrLeft.length && j<arrRight.length) {
+        if(arrLeft[i] < arrRight[j]) {
+            newArr.push(arrLeft[i]);
+            i++;
         } else {
-            //把right的右子树推出一个，然后push进result数组里
-            result.push(right.shift());
+            newArr.push(arrRight[j]);
+            j++;
         }
     }
-    //经过上面一次循环，只能左子列或右子列一个不为空，或者都为空
-    while (left.length) {
-        result.push(left.shift());
+
+    if(i === arrLeft.length) {  //如果arrLeft已经遍历完，则直接把arrRight数组中剩余的元素放入newArr
+        newArr = newArr.concat(arrRight.slice(j));
+    } else {
+        newArr = newArr.concat(arrLeft.slice(i));
     }
-    while (right.length) {
-        result.push(right.shift());
-    }
-    return result;
+    return newArr;
 }
 ```
 
