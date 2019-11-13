@@ -426,6 +426,36 @@ function merge(arrLeft, arrRight) {
 
 * 逆序数对
 
+```js
+//修改上面的merge
+function merge(arrLeft, arrRight) {
+    let i = 0;
+    let j = 0;
+    let newArr = [];
+    while(i<arrLeft.length && j<arrRight.length) {
+        if(arrLeft[i] <= arrRight[j]) {//改为<=
+            newArr.push(arrLeft[i]);
+            i++;
+        } else {
+            newArr.push(arrRight[j]);
+            for (var index = i; index < arrLeft.length; index++) {
+                console.log('pairs:(' + arrLeft[index] + ',' + arrRight[j] + ')');
+            }
+            //此位置的逆序数对长度为：arrLeft.length - i
+            //总逆序数对：把这里出现的逆序数对累加即可
+            j++;
+        }
+    }
+
+    if(i === arrLeft.length) {  //如果arrLeft已经遍历完，则直接把arrRight数组中剩余的元素放入newArr
+        newArr = newArr.concat(arrRight.slice(j));
+    } else {
+        newArr = newArr.concat(arrLeft.slice(i));
+    }
+    return newArr;
+}
+```
+
 #### 堆排序
 1. 概念
 
