@@ -480,6 +480,7 @@ let buildMaxHeap = (arr) => {   //建立大顶堆
     for (let i = Math.floor(len / 2 - 1); i >= 0; i--) {
         heapify(arr, i);
     }
+    //从最后一个父节点开始排，一旦底层排好，上层则不会产生递归，复杂度O(n)
 }
 
 let heapify = (arr, i) => {     //堆调整
@@ -497,7 +498,7 @@ let heapify = (arr, i) => {     //堆调整
 
     if (largest != i) {
         swap(arr, i, largest);
-        heapify(arr, largest);//其子节点变父节点，再次调整
+        heapify(arr, largest);//其子节点变父节点，再次调整，只需调整被改动的半边，复杂度O(log2 n)
     }
 }
 
@@ -509,15 +510,62 @@ let swap = (arr, i, j) => {
 
 let heapSort = (arr) => {
     //初始化，i从最後一个父节点开始调整
-    buildMaxHeap(arr);
+    buildMaxHeap(arr);//复杂度O(n)
     //先将第一个元素和已经排好的元素前一位做交换，再从新调整(刚调整的元素之前的元素)，直到排序完毕
-    for (let i = arr.length - 1; i > 0; i--) {
+    for (let i = arr.length - 1; i > 0; i--) {//复杂度O(n)
         swap(arr, 0, i);
         len--;
-        heapify(arr, 0);//从根节点开始递归
+        heapify(arr, 0);//从根节点开始递归，复杂度O(log2 n)
     }
+    //总复杂度O(n+nlog2 n)->O(nlog2 n)
     return arr;
 }
+```
+
+测试：
+```js
+let heapSort = (array) => {
+        let len = array.length;
+        buildMaxHeap(array);
+        while(len>0){
+            swap(array,0,len-1);
+            len--;
+            heapJustify(array,0,len);
+        }
+    }
+    let buildMaxHeap = (array) => {
+        let len = array.length;
+        for(let i = Math.floor(len/2-1);i >= 0;i--){
+            heapJustify(array,i,len);
+        }
+    }
+    let heapJustify = (array,currentNodeIndex,subLength) => {
+        let leftIndex = 2*currentNodeIndex+1;
+        let rightIndex = 2*currentNodeIndex+2;
+        let maxIndex = currentNodeIndex;
+        if(leftIndex<subLength && array[leftIndex]>array[maxIndex]){
+            maxIndex = leftIndex;
+        }
+        if(rightIndex<subLength && array[rightIndex]>array[maxIndex]){
+            maxIndex = rightIndex;
+        }
+        if(maxIndex != currentNodeIndex){
+            swap(array,maxIndex,currentNodeIndex);
+            heapJustify(array,maxIndex,subLength);
+        }
+    }
+    let swap = (array,i,j) => {
+        let temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+    }
+    $(()=>{
+        let array = [5,1,2,3,4,6,7];
+        //hj(array,0,array.length);//[5, 1, 2, 3, 4, 6, 7]
+        //bmh(array);//[7, 4, 6, 3, 1, 5, 2]
+        heapSort(array);//[1, 2, 3, 4, 5, 6, 7]
+        console.log(array);
+    });
 ```
 
 * 处理数组越界
