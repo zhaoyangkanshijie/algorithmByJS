@@ -1283,7 +1283,40 @@ $(function () {
 
         抽牌二分查找，改进时间复杂度为O(n log n)
         ```js
+        let lis = (nums) => {
+            let top = new Array(nums.length);
+            let piles = 0;// 牌堆数初始化为 0
+            for (let i = 0; i < nums.length; i++) {
+                let poker = nums[i];// 要处理的扑克牌
+                //二分查找:决定新来的牌插入哪一个牌堆(插入到刚好比这牌大的牌堆中)
+                //牌堆顶：1 2 3 4 5 6 7 8 -> 新牌：3
+                //1 2 3 4
+                //3 4
+                //4
+                //牌堆顶：1 2 3 3 5 6 7 8 -> 替换
 
+                //牌堆顶：1 2 3 3 5 6 7 8 -> 新牌：9
+                //5 6 7 8
+                //7 8
+                //8
+                //牌堆顶：1 2 3 3 5 6 7 8 9 -> 新建
+                let left = 0, right = piles;
+                while (left < right) {
+                    let mid = parseInt((left + right) / 2);
+                    if (top[mid] >= poker) {
+                        right = mid;
+                    } 
+                    else {
+                        left = mid + 1;
+                    } 
+                }
+                console.log("left:"+left,"piles:"+piles)
+                if (left == piles) piles++;// 没找到合适的牌堆，新建一堆
+                top[left] = poker;// 把这张牌放到牌堆顶
+                console.log("poker top",top)
+            }
+            return piles;//最后牌堆数即为最长递增子序列长度
+        }
         ```
 
         题目升级变型：俄罗斯套娃信封问题
@@ -1298,4 +1331,30 @@ $(function () {
         输入: envelopes = [[5,4],[6,4],[6,7],[2,3]]
         输出: 3 
         解释: 最多信封的个数为 3, 组合为: [2,3] => [5,4] => [6,7]。
+        ```
+
+        ```js
+        let maxEnvelopes = (envelopes) => {
+            //先按第0位顺序排序，再按第一位逆序排序，根据第一位求最长递增子序列
+            envelopes = envelopes.sort((a,b)=>{
+                console.log(a,b);//a是第二个数,b是第一个数
+                console.log((a[0]<b[0])||(a[0]==b[0]&&a[1]>b[1]));
+                if((a[0]<b[0])||(a[0]==b[0]&&a[1]>b[1])){
+                    return -1;
+                }
+                else{
+                    return 1;
+                }
+            });
+            console.log(envelopes);
+            let numbers = envelopes.map((value,index,arr)=>{
+                return value[1];
+            });
+            console.log(numbers);
+            return lis(numbers);//见上面
+        }
+        $(()=>{
+            let envelopes = [[5,4],[6,4],[6,7],[2,3]];
+            console.log(maxEnvelopes(envelopes));
+        });
         ```
