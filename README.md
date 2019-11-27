@@ -1358,3 +1358,96 @@ $(function () {
             console.log(maxEnvelopes(envelopes));
         });
         ```
+
+### 滑动窗口
+1. 样例1
+
+    * 来源：[力扣（LeetCode）](https://leetcode-cn.com)
+
+    * 和为K的子数组
+    ```txt
+    给定一个整数数组和一个整数 k，你需要找到该数组中和为 k 的连续的子数组的个数,并输出所有子数组。
+
+    示例:
+    输入:nums = [1,1,1], k = 2
+    输出: 2 , [1,1] 与 [1,1] 为两种不同的情况。
+    说明 :
+    数组的长度为 [1, 20,000]。
+    数组中元素的范围是 [-1000, 1000] ，且整数 k 的范围是 [-1e7, 1e7]。
+    ```
+
+    二重循环
+    ```js
+    let subarraySum = (nums, k) => {
+        let count = 0;
+        let position = [];
+        for(let start = 0;start < nums.length;start++){
+            let sum = 0;
+            for(let end = start;end < nums.length;end++){
+                sum += nums[end];
+                if(sum == k){
+                    count++;
+                    position.push({
+                        'start': start,
+                        'end': end
+                    });
+                }
+            }
+        }
+        console.log(position);
+        return count;
+    };
+    $(()=>{
+        let nums = [3,4,7,2,-3,1,4,2];
+        let k = 7;
+        console.log(subarraySum(nums,k))
+        //0: {start: 0, end: 1}
+        //1: {start: 2, end: 2}
+        //2: {start: 2, end: 5}
+        //3: {start: 5, end: 7}
+        //4
+    })
+    ```
+
+    哈希表
+    ```js
+    let subarraySum = (nums, k) => {
+        let hashmap = [{
+            'position': [0],
+            'count': 1
+        }];
+        let sum = 0,count = 0;
+        for(let i = 0;i < nums.length;i++){
+            sum += nums[i];
+            if(!hashmap[sum]){
+                hashmap[sum] = {
+                    'position': [i],
+                    'count': 1
+                }
+            }
+            else{
+                hashmap[sum].position.push(i);
+                hashmap[sum].count++;
+            }
+            if(hashmap[sum-k]){
+                count += hashmap[sum-k].count;
+            }
+        }
+        console.log(hashmap);
+        return count;
+    };
+    $(()=>{
+        let nums = [3,4,7,2,-3,1,4,2];
+        let k = 7;
+        console.log(subarraySum(nums,k))
+        // 0: {position: Array(1), count: 1}
+        // 3: {position: Array(1), count: 1}
+        // 7: {position: Array(1), count: 1}
+        // 13: {position: Array(1), count: 1}
+        // 14: {position: Array(2), count: 2}
+        // 16: {position: Array(1), count: 1}
+        // 18: {position: Array(1), count: 1}
+        // 20: {position: Array(1), count: 1}
+        // 4
+    })
+    ```
