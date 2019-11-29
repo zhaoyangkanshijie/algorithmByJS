@@ -1451,3 +1451,116 @@ $(function () {
         // 4
     })
     ```
+
+### 快慢指针
+
+* 判断链表成环
+```js
+class ListNode{
+    constructor(val){
+        this.val = val;
+        this.next = null;
+    }
+}
+let hasCycle = (head) => {
+    if (head == null || head.next == null) {
+        return false;
+    }
+    let slow = head;
+    let fast = head.next;
+    while (slow != fast) {
+        if (fast == null || fast.next == null) {
+            return false;
+        }
+        slow = slow.next;
+        fast = fast.next.next;
+    }
+    return true;
+}
+$(()=>{
+    let head = new ListNode(1);
+    let node1 = new ListNode(2);
+    let node2 = new ListNode(3);
+    let node3 = new ListNode(4);
+    let node4 = new ListNode(5);
+    head.next = node1;
+    node1.next = node2;
+    node2.next = node3;
+    node3.next = node4;
+    //node4.next = node1;
+    console.log(hasCycle(head));
+});
+```
+
+### 双指针
+1. 样例1
+
+    * 来源：[力扣（LeetCode）](https://leetcode-cn.com)
+
+    * 两数之和
+    ```txt
+    给定一个整数数组 nums 和一个目标值 target，在该数组中找出和为目标值的那 两个 整数，并返回他们的数组下标。
+    不能重复利用这个数组中同样的元素。
+
+    示例:
+
+    给定 nums = [2, 7, 11, 15], target = 9
+
+    因为 nums[0] + nums[1] = 2 + 7 = 9
+    所以返回 [0, 1]
+    ```
+
+    二重指针循环
+    ```js
+    let twoSum = (nums, target) => {
+        let len = nums.length;
+        for(let previous = 0;previous < len;previous++){
+            for(let next = previous+1;next < len;next++){
+                if(nums[previous]+nums[next]==target){
+                    return [previous,next];
+                }
+            }
+        }
+    }
+    $(()=>{
+        let nums = [2, 7, 11, 15], target = 9;
+        console.log(twoSum(nums, target));
+    });
+    ```
+
+    哈希表
+    ```js
+    let twoSum = (nums, target) => {
+        let len = nums.length;
+        let hashmap = [];
+        for(let i = 0;i < len;i++){
+            if(hashmap[target-nums[i]] >= 0 && hashmap[target-nums[i]] < len){
+                return [hashmap[target-nums[i]],i];
+            }
+            hashmap[nums[i]] = i;
+        }
+    }
+    $(()=>{
+        let nums = [2, 7, 11, 15], target = 9;
+        console.log(twoSum(nums, target));
+    });
+    ```
+
+2. 样例2
+
+    * 来源：[力扣（LeetCode）](https://leetcode-cn.com)
+
+    * 三数之和
+    ```txt
+    给定一个包含 n 个整数的数组 nums，判断 nums 中是否存在三个元素 a，b，c ，使得 a + b + c = 0 ？找出所有满足条件且不重复的三元组。
+
+    注意：答案中不可以包含重复的三元组。
+
+    例如, 给定数组 nums = [-1, 0, 1, 2, -1, -4]，
+
+    满足要求的三元组集合为：
+    [
+    [-1, 0, 1],
+    [-1, -1, 2]
+    ]
+    ```
