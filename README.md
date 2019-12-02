@@ -1552,15 +1552,132 @@ $(()=>{
 
     * 三数之和
     ```txt
-    给定一个包含 n 个整数的数组 nums，判断 nums 中是否存在三个元素 a，b，c ，使得 a + b + c = 0 ？找出所有满足条件且不重复的三元组。
+    给定一个包含 n 个整数的数组 nums 和一个目标值 target，判断 nums 中是否存在三个元素 a，b，c ，使得 a + b + c = target ？找出所有满足条件且不重复的三元组。
 
-    注意：答案中不可以包含重复的三元组。
+    注意：不可以包含重复的三元组。
 
-    例如, 给定数组 nums = [-1, 0, 1, 2, -1, -4]，
+    例如, 给定数组 nums = [-1, 0, 1, 2, -1, -4]，target = 0
 
     满足要求的三元组集合为：
     [
-    [-1, 0, 1],
-    [-1, -1, 2]
+        [-1, 0, 1],
+        [-1, -1, 2]
     ]
+    ```
+
+    排序+双指针
+    ```js
+    let threeSum = function(nums,target) {
+        let ans = [];
+        const len = nums.length;
+        if(nums == null || len < 3) return ans;
+        nums.sort((a, b) => a - b); // 排序O(nlog2n)
+        for (let i = 0; i < len - 2 ; i++) {//O(n2)
+            if(nums[i] > target) break; // 固定最小的数，如果当前数字大于target，则三数之和一定大于target，所以结束循环
+            if(i > 0 && nums[i] == nums[i-1]) continue; // 去重
+            if(nums[i]+nums[i+1]+nums[i+2] > target) continue;//和尽可能小的数相加，过大则不适合
+            if(nums[i]+nums[len-1]+nums[len-2] < target) continue;//和尽可能大的数相加，过小则不适合
+            let L = i+1;//下一个数
+            let R = len-1;//最后一个数
+            while(L < R){
+                const sum = nums[i] + nums[L] + nums[R];
+                if(sum == target){
+                    ans.push([nums[i],nums[L],nums[R]]);
+                    while (L<R && nums[L] == nums[L+1]) L++; // 去重
+                    while (L<R && nums[R] == nums[R-1]) R--; // 去重
+                    L++;
+                    R--;
+                }
+                else if (sum < target) L++;
+                else if (sum > target) R--;
+            }
+        }
+        return ans;
+    };
+    $(()=>{
+        let nums = [-1, 0, 1, 2, -1, -4 ,0 ,0];
+        let target = 0;
+        console.log(threeSum(nums,target));
+    });
+    ```
+
+* 样例3
+
+    * 来源：[力扣（LeetCode）](https://leetcode-cn.com)
+
+    * 四数之和
+    ```txt
+    给定一个包含 n 个整数的数组 nums 和一个目标值 target，判断 nums 中是否存在四个元素 a，b，c 和 d ，a + b + c + d = target ？找出所有满足条件且不重复的四元组。
+
+    注意：不可以包含重复的四元组。
+
+    示例：
+
+    给定数组 nums = [1, 0, -1, 0, -2, 2]，和 target = 0。
+
+    满足要求的四元组集合为：
+    [
+        [-1,  0, 0, 1],
+        [-2, -1, 1, 2],
+        [-2,  0, 0, 2]
+    ]
+    ```
+
+    排序+化简+双指针
+    ```js
+    let fourSum = function(nums,target) {
+        let ans = [];
+        const len = nums.length;
+        if(nums == null || len < 4) return ans;
+        nums.sort((a, b) => a - b); // 排序O(nlog2n)
+        for (let i = 0; i < len - 3 ; i++) {//O(n)
+            if(nums[i] > target) break; // 如果当前数字大于target，则三数之和一定大于target，所以结束循环
+            if(i > 0 && nums[i] == nums[i-1]) continue; // 去重
+            // 先直接和其它三个数可能的最小值相加，还是过大就说明这个i不合适
+            if (nums[i]+nums[i+1]+nums[i+2]+nums[i+3] > target) continue;
+            // 与其它三个数可能的最大值相加，还是过小就继续下个循环
+            if (nums[i]+nums[len-1]+nums[len-2]+nums[len-3] < target)  continue;
+            //化简为三数之和
+            const target2 = target - nums[i];
+            const nums2 = nums.slice(i+1);
+            for(let arr of threeSum(nums2,target2)){//O(n2)
+                let array = JSON.parse(JSON.stringify(arr));
+                array.unshift(nums[i]);
+                ans.push(array);
+            }
+        }
+        return ans;
+    };
+    let threeSum = function(nums,target) {
+        let ans = [];
+        const len = nums.length;
+        if(nums == null || len < 3) return ans;
+        //nums.sort((a, b) => a - b); // 已经有序，无需再排
+        for (let i = 0; i < len - 2 ; i++) {
+            if(nums[i] > target) break; // 固定最小的数，如果当前数字大于target，则三数之和一定大于target，所以结束循环
+            if(i > 0 && nums[i] == nums[i-1]) continue; // 去重
+            if(nums[i]+nums[i+1]+nums[i+2] > target) continue;//和尽可能小的数相加，过大则不适合
+            if(nums[i]+nums[len-1]+nums[len-2] < target) continue;//和尽可能大的数相加，过小则不适合
+            let L = i+1;//下一个数
+            let R = len-1;//最后一个数
+            while(L < R){
+                const sum = nums[i] + nums[L] + nums[R];
+                if(sum == target){
+                    ans.push([nums[i],nums[L],nums[R]]);
+                    while (L<R && nums[L] == nums[L+1]) L++; // 去重
+                    while (L<R && nums[R] == nums[R-1]) R--; // 去重
+                    L++;
+                    R--;
+                }
+                else if (sum < target) L++;
+                else if (sum > target) R--;
+            }
+        }
+        return ans;
+    };
+    $(()=>{
+        let nums = [1, 0, -1, 0, -2, 2];
+        let target = 0;
+        console.log(fourSum(nums,target));
+    });
     ```
