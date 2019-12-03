@@ -1573,7 +1573,6 @@ $(()=>{
         if(nums == null || len < 3) return ans;
         nums.sort((a, b) => a - b); // 排序O(nlog2n)
         for (let i = 0; i < len - 2 ; i++) {//O(n2)
-            if(nums[i] > target) break; // 固定最小的数，如果当前数字大于target，则三数之和一定大于target，所以结束循环
             if(i > 0 && nums[i] == nums[i-1]) continue; // 去重
             if(nums[i]+nums[i+1]+nums[i+2] > target) continue;//和尽可能小的数相加，过大则不适合
             if(nums[i]+nums[len-1]+nums[len-2] < target) continue;//和尽可能大的数相加，过小则不适合
@@ -1631,7 +1630,6 @@ $(()=>{
         if(nums == null || len < 4) return ans;
         nums.sort((a, b) => a - b); // 排序O(nlog2n)
         for (let i = 0; i < len - 3 ; i++) {//O(n)
-            if(nums[i] > target) break; // 如果当前数字大于target，则三数之和一定大于target，所以结束循环
             if(i > 0 && nums[i] == nums[i-1]) continue; // 去重
             // 先直接和其它三个数可能的最小值相加，还是过大就说明这个i不合适
             if (nums[i]+nums[i+1]+nums[i+2]+nums[i+3] > target) continue;
@@ -1654,7 +1652,6 @@ $(()=>{
         if(nums == null || len < 3) return ans;
         //nums.sort((a, b) => a - b); // 已经有序，无需再排
         for (let i = 0; i < len - 2 ; i++) {
-            if(nums[i] > target) break; // 固定最小的数，如果当前数字大于target，则三数之和一定大于target，所以结束循环
             if(i > 0 && nums[i] == nums[i-1]) continue; // 去重
             if(nums[i]+nums[i+1]+nums[i+2] > target) continue;//和尽可能小的数相加，过大则不适合
             if(nums[i]+nums[len-1]+nums[len-2] < target) continue;//和尽可能大的数相加，过小则不适合
