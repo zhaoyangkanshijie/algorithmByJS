@@ -1360,6 +1360,10 @@ $(function () {
         ```
 
 ### 滑动窗口
+* 算法识别与思想
+
+    一个数组中，对一些连续数据的操作，形成窗口
+
 1. 样例1
 
     * 来源：[力扣（LeetCode）](https://leetcode-cn.com)
@@ -1453,8 +1457,11 @@ $(function () {
     ```
 
 ### 快慢指针
+* 算法识别与思想
 
-* 判断链表成环
+    判断链表成环等单向追及问题，来源于龟兔赛跑，快的再次追及慢的，表示成环。
+
+1. 判断链表成环
 ```js
 class ListNode{
     constructor(val){
@@ -1492,7 +1499,56 @@ $(()=>{
 });
 ```
 
+2. 判断链表回文
+```js
+class ListNode{
+    constructor(val){
+        this.val = val;
+        this.next = null;
+    }
+}
+let isPalindrome = (head) => {
+    if(head == null || head.next == null) {
+        return true;
+    }
+    let slow = head, fast = head;
+    let current = head, previous = null;
+    while(fast != null && fast.next != null) {//翻转一半链表，记录中间位置
+        current = slow;//当前位置指向下一位，结束时current会去到中间位置（奇偶情况都满足），指向为反向，即翻转一半链表
+        slow = slow.next;//结束时slow会去到中间位置，指向为正向
+        fast = fast.next.next;
+        current.next = previous;//当前节点的下一节点为已翻转的子链表
+        previous = current;//记录当前节点位置
+    }
+    if(fast != null) {//节点为奇数时，后半段的起始位置，位于中间节点的下一位
+        slow = slow.next;
+    }
+    while(current != null && slow != null) {//从中间开始向外扩散，对比正反链表每一位值是否一样
+        if(current.val != slow.val) {
+            return false;
+        }
+        current = current.next;
+        slow = slow.next;
+    }
+    return true;
+}
+let head = new ListNode(1);
+    let a = new ListNode(2);
+    let b = new ListNode(3);
+    let c = new ListNode(2);
+    let d = new ListNode(1);
+    head.next = a;
+    a.next = b;
+    b.next = c;
+    c.next = d;
+    console.log(isPalindrome(head));
+```
+
 ### 双指针
+* 算法识别与思想
+
+    一个数组中，对不连续数据或单个数据的操作，两指针左右移动，直到满足条件，如相遇、到达边界等。
+
 1. 样例1
 
     * 来源：[力扣（LeetCode）](https://leetcode-cn.com)
@@ -1678,3 +1734,184 @@ $(()=>{
         console.log(fourSum(nums,target));
     });
     ```
+
+### 区间合并
+* 算法识别与思想
+
+    产生没有交集的空间
+
+* 样例
+
+    * 来源：[力扣（LeetCode）](https://leetcode-cn.com)
+
+    * 合并区间
+    ```txt
+    给出一个区间的集合，请合并所有重叠的区间。
+
+    示例 1:
+
+    输入: [[1,3],[2,6],[8,10],[15,18]]
+    输出: [[1,6],[8,10],[15,18]]
+    解释: 区间 [1,3] 和 [2,6] 重叠, 将它们合并为 [1,6].
+    ```
+
+    首数字排序+合并
+    ```js
+    let merge = function(intervals) {
+        let result = [];
+        let len = intervals.length;
+        if(len == 0){
+            return [];
+        }
+        if(len == 1){
+            return intervals;
+        }
+        intervals.sort((a,b) => a[0] - b[0]);//对第一位进行升序排列
+        let i = 0;
+        while(i < len){
+            let currentLeft = intervals[i][0];
+            let currentRight = intervals[i][1];
+            //对于[a,b],[c,d]，如果b>=c，则合并为[a,max(b,d)]
+            while(i < len - 1 && intervals[i+1][0] <= currentRight){
+                i++;
+                currentRight = Math.max(intervals[i][1],currentRight);
+            }
+            result.push([currentLeft,currentRight]);
+            i++;
+        }
+        return result;
+    };
+    $(()=>{
+        let intervals = [[1,3],[2,6],[8,10],[15,18]];
+        let intervals2 = [[1,4],[4,5]];
+        let intervals3 = [[1,9],[2,5],[19,20],[10,11],[12,20],[0,3],[0,1],[0,2]];
+        console.log(merge(intervals3));//[[0, 9],[10, 11],[12, 20]]
+    });
+    ```
+
+### 原地链表翻转
+* 算法识别与思想
+
+    每次摘取当前链表头部，反向连接
+
+1. 单向链表翻转
+```js
+class ListNode{
+    constructor(val){
+        this.val = val;
+        this.next = null;
+    }
+}
+let reverseLinkList = (head) => {
+    let previous = null;
+    let current = head;
+    while (current != null) {
+        let next = current.next;//将下一个节点位置保存起来 2(next)-3-4-5 3(next)-4-5 ...
+        current.next = previous;//当前节点的下一节点为已翻转的子链表：null 1-null 2-1-null ...
+        previous = current;//记录当前节点位置 1(previous)-null 2(previous)-1-null ...
+        current = next;//记录当前位置位于下一节点 2(current)-3-4-5 3(current)-4-5 ...
+    }
+    return previous;
+}
+$(()=>{
+    let head = new ListNode(1);
+    let a = new ListNode(2);
+    let b = new ListNode(3);
+    let c = new ListNode(4);
+    let d = new ListNode(5);
+    head.next = a;
+    a.next = b;
+    b.next = c;
+    c.next = d;
+    console.log(reverseLinkList(head));
+});
+```
+
+2. 单向链表每k个元素进行翻转
+```js
+class ListNode{
+    constructor(val){
+        this.val = val;
+        this.next = null;
+    }
+}
+let reverseKGroup = (head, k) => {
+    let dummy = new ListNode(0);
+    dummy.next = head;
+
+    let pre = dummy;
+    let end = dummy;
+
+    while (end.next != null) {
+        for (let i = 0; i < k && end != null; i++) end = end.next;//把end移到每一组的最后一位
+        if (end == null) break;
+        let start = pre.next;
+        let next = end.next;
+        end.next = null;//断开end的后续连接
+        pre.next = reverseLinkList(start);//设置每组头部指向这组翻转的链表
+        start.next = next;//原本组的头部变为尾部，尾部连接上end的下一位
+        pre = start;//设置遍历位置到达这组的末尾位置
+        end = pre;
+    }
+    return dummy.next;//返回改变后链表的头部
+};
+let reverseLinkList = (head) => {
+    let previous = null;
+    let current = head;
+    while (current != null) {
+        let next = current.next;//将下一个节点位置保存起来 2(next)-3-4-5 3(next)-4-5 ...
+        current.next = previous;//当前节点的下一节点为已翻转的子链表：null 1-null 2-1-null ...
+        previous = current;//记录当前节点位置 1(previous)-null 2(previous)-1-null ...
+        current = next;//记录当前位置位于下一节点 2(current)-3-4-5 3(current)-4-5 ...
+    }
+    return previous;
+}
+$(()=>{
+    let head = new ListNode(1);
+    let a = new ListNode(2);
+    let b = new ListNode(3);
+    let c = new ListNode(4);
+    let d = new ListNode(5);
+    head.next = a;
+    a.next = b;
+    b.next = c;
+    c.next = d;
+    let group = 2;
+    console.log(reverseKGroup(head,group));
+});
+```
+
+### 循环排序
+* 算法识别与思想
+
+    处理数组中的数值限定在一定区间的问题，寻找丢失的/重复的/最小的元素，使用索引作为哈希键值，脏工作环境分配 n 个 0的方法。
+
+### 双堆类型
+* 算法识别与思想
+
+    需要把数字分成两队的问题，一边最大堆找最大元素，一边最小堆找最小元素，也可求中位数，使用优先队列
+
+### 子集问题
+* 算法识别与思想
+
+    BFS处理数字的排列组合问题
+
+### 二分变种
+* 算法识别与思想
+
+    对于排序好的数组、链表、矩阵，进行二分搜索、插入
+
+### 前K个系列
+* 算法识别与思想
+
+    求解最大/最小/最频繁的K个元素，使用优先队列
+
+### K路归并
+* 算法识别与思想
+
+    处理k个排好序的数据问题
+
+### 拓扑排序
+* 算法识别与思想
+
+    寻找一种线性的顺序，这些元素之间具有依懒性，使用有向无环图
