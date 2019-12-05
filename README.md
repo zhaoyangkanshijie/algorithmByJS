@@ -1886,6 +1886,181 @@ $(()=>{
 
     处理数组中的数值限定在一定区间的问题，寻找丢失的/重复的/最小的元素，使用索引作为哈希键值，脏工作环境分配 n 个 0的方法。
 
+1. 样例1
+
+    * 来源：[力扣（LeetCode）](https://leetcode-cn.com)
+
+    * 寻找重复数
+    ```txt
+    给定一个包含 n + 1 个整数的数组 nums，其数字都在 1 到 n 之间（包括 1 和 n），可知至少存在一个重复的整数。假设只有一个重复的整数，找出这个重复的数。
+
+    输入: [1,3,4,2,2]
+    输出: 2
+    ```
+
+    排序遍历和哈希表统计略过，看循环检测（哈希数组下标-链表成环-快慢指针）
+    ```js
+    findDuplicate(nums) {
+        //[1,3,5,2,2,4]
+        //1->3->2(1)->5->4->2(2)
+        let slow = nums[0];
+        let fast = nums[0];
+        do {//找到链表成环的起始位置5
+            slow = nums[slow];
+            fast = nums[nums[fast]];
+        } while (slow != fast);
+
+
+        let ptr1 = nums[0];
+        let ptr2 = slow;
+        while (ptr1 != ptr2) {//找到链表成环的重复数
+            ptr1 = nums[ptr1];
+            ptr2 = nums[ptr2];
+        }
+
+        return ptr1;
+    }
+    ```
+
+2. 样例2
+
+    * 来源：[力扣（LeetCode）](https://leetcode-cn.com)
+
+    * 缺失数字
+    ```txt
+    给定一个包含 0, 1, 2, ..., n 中 n 个数的序列，找出 0 .. n 中没有出现在序列中的那个数。
+
+    输入: [3,0,1]
+    输出: 2
+    ```
+
+    排序遍历
+    ```js
+    let missingNumber = (nums) => {
+        nums.sort((a,b)=>a-b);
+        for(let i = 0;i < nums.length;i++){
+            if(nums[i] != i){
+                return i;
+            }
+        }
+        return nums.length;
+    }
+    ```
+
+    哈希表或桶排序遍历
+    ```js
+    let missingNumber = (nums) => {
+        let arr = new Array(nums.length).fill(0);
+        for(let i = 0;i < nums.length;i++){
+            arr[nums[i]]++;
+        }
+        for(let i = 0;i < arr.length;i++){
+            if(arr[i]==0){
+                return i;
+            }
+        }
+        return nums.length;
+    }
+    ```
+
+    位运算
+    ```js
+    let missingNumber = (nums) => {
+        let missing = nums.length;
+        for (let i = 0; i < nums.length; i++) {
+            missing ^= i ^ nums[i];
+        }
+        return missing;
+    }
+    ```
+
+    脑筋急转弯：公式求和再减掉所有数
+    ```js
+    let missingNumber = (nums) => {
+        let len = nums.length;
+        let total = len * (len + 1) / 2;
+        for(let i = 0;i < len;i++){
+            total -= nums[i];
+        }
+        if(total >= 0){
+            return total;
+        }
+        else{
+            return len;
+        }
+    }
+    ```
+    
+
+3. 样例3
+
+    * 来源：[力扣（LeetCode）](https://leetcode-cn.com)
+
+    * 寻找重复数
+    ```txt
+    给定一个未排序的整数数组，找出其中没有出现的最小的正整数。
+
+    输入: [1,2,0]
+    输出: 3
+    输入: [3,4,-1,1]
+    输出: 2
+    输入: [7,8,9,11,12]
+    输出: 1
+    ```
+
+    脏环境哈希，正负表示访问情况，绝对值表示原值
+    ```js
+    let firstMissingPositive = (nums) => {
+        let len = nums.length;
+
+        //下面需要用通过变负数的方式看数组下标是否被访问，所以先排除下标为1的情况
+        let hasOne = false;
+        for (let i = 0; i < len; i++){
+            if (nums[i] == 1) {
+                hasOne = true;
+                break;
+            }
+        }
+        if (!hasOne){
+            return 1;
+        }
+        if (len == 1){
+            return 2;
+        }
+
+        //把小于1和大于数组长度的数变为1
+        for (let i = 0; i < len; i++){
+            if ((nums[i] < 1) || (nums[i] > len)){
+                nums[i] = 1;
+            }
+        }
+
+        //某一位的值为负数，表示访问过，并且其绝对值即为原值
+        for (let i = 0; i < len; i++) {
+            let a = Math.abs(nums[i]);
+            if (a == len){//把值为len的数放到0位
+                nums[0] = - Math.abs(nums[0]);
+            }
+            else{//把哈希位置的数变为负数，表示访问过
+                nums[a] = - Math.abs(nums[a]);
+            }
+        }
+
+        //从1号位开始，后面出现的第一个正数，即为缺失的数字
+        for (let i = 1; i < len; i++) {
+            if (nums[i] > 0){
+                return i;
+            }
+        }
+        //1号位后的全被访问过，但0号位未访问过，即为数组长度的数字
+        if (nums[0] > 0){
+            return len;
+        }
+        //全部都访问过，即为数组长度的数字+1
+        return len + 1;
+    };
+    ```
+
 ### 双堆类型
 * 算法识别与思想
 
