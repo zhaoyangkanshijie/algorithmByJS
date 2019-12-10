@@ -1884,7 +1884,7 @@ $(()=>{
 ### 循环排序
 * 算法识别与思想
 
-    处理数组中的数值限定在一定区间的问题，寻找丢失的/重复的/最小的元素，使用索引作为哈希键值，脏工作环境分配 n 个 0的方法。
+    处理数组中的数值限定在一定区间的问题，寻找丢失的/重复的/最小的元素，使用索引作为哈希键值，脏环境处理的方法。
 
 1. 样例1
 
@@ -2064,7 +2064,238 @@ $(()=>{
 ### 双堆类型
 * 算法识别与思想
 
-    需要把数字分成两队的问题，一边最大堆找最大元素，一边最小堆找最小元素，也可求中位数，使用优先队列
+    需要把数字分成两队的问题，一边最大堆找最大元素，一边最小堆找最小元素，也可求中位数，使用优先队列（先进最大数先出，如医院急诊室排队）
+
+    ```txt
+    设计一个支持以下两种操作的数据结构：
+
+    void addNum(int num) - 从数据流中添加一个整数到数据结构中。
+    double findMedian() - 返回目前所有元素的中位数。
+
+    示例：
+
+    addNum(1)
+    addNum(2)
+    findMedian() -> 1.5
+    addNum(3) 
+    findMedian() -> 2
+    ```
+
+    优先队列（最大堆，最小堆）
+    ```js
+    class PriorityQueue{
+        //-1从小到大，1从大到小
+        constructor(compare = 1){
+            this.data = [];
+            this.compare = compare;
+        }
+        push(number){
+            if(this.compare == 1){
+                if(this.data.length == 0){
+                    this.data.push(number);
+                }
+                else{
+                    let low = 0;
+                    let high = this.data.length - 1;
+                    let mid = 0;
+                    while(low < high){
+                        mid = low + parseInt((high - low) / 2);
+                        if(this.data[mid] > number){
+                            low = mid + 1;
+                        }
+                        else{
+                            high = mid;
+                        }
+                    }
+                    mid = low + parseInt((high - low) / 2);
+                    if(this.data[mid] > number){
+                        this.data.splice(mid+1,0,number);
+                    }
+                    else{
+                        this.data.splice(mid,0,number);
+                    }
+                }
+            }
+            else{
+                if(this.data.length == 0){
+                    this.data.push(number);
+                }
+                else{
+                    let low = 0;
+                    let high = this.data.length - 1;
+                    let mid = 0;
+                    while(low < high){
+                        mid = low + parseInt((high - low) / 2);
+                        if(this.data[mid] > number){
+                            high = mid;
+                        }
+                        else{
+                            low = mid + 1;
+                        }
+                    }
+                    mid = low + parseInt((high - low) / 2);
+                    if(this.data[mid] < number){
+                        this.data.splice(mid+1,0,number);
+                    }
+                    else{
+                        this.data.splice(mid,0,number);
+                    }
+                }
+            }
+        }
+        pop(){
+            let index = this.topIndex();
+            if(index != -1){
+                let tmp = this.data[index];
+                this.data.splice(index,1);
+                return tmp;
+            }
+            else{
+                return null;
+            }
+        }
+        topIndex(){
+            return this.data.length > 0 ? 0 : -1;
+        }
+        top(){
+            let index = this.topIndex();
+            if(index != -1){
+                return this.data[index];
+            }
+            else{
+                return null;
+            }
+        }
+        shift(){
+            let index = this.bottomIndex();
+            if(index != -1){
+                let tmp = this.data[index];
+                this.data.splice(index,1);
+                return tmp;
+            }
+            else{
+                return null;
+            }
+        }
+        bottomIndex(){
+            return this.data.length > 0 ? this.data.length - 1 : -1;
+        }
+        bottom(){
+            let index = this.bottomIndex();
+            if(index != -1){
+                return this.data[index];
+            }
+            else{
+                return null;
+            }
+        }
+        size() {
+            return this.data.length;
+        }
+        toString(){
+            return this.data.toString();
+        }
+    }
+    class MedianFinder{
+        constructor(){
+            this.maxHeap = new PriorityQueue(1);
+            this.minHeap = new PriorityQueue(-1);
+        }
+        addNum(num){
+            if (this.maxHeap.size() == 0 || num < this.minHeap.top()) {
+                this.maxHeap.push(num);
+                if (this.maxHeap.size() > this.minHeap.size() + 1) {
+                    this.minHeap.push(this.maxHeap.pop());
+                }
+            }
+            else {
+                this.minHeap.push(num);
+                if (this.minHeap.size() > this.maxHeap.size()) {
+                    this.maxHeap.push(this.minHeap.pop());
+                }
+                if(this.maxHeap.top() > this.minHeap.bottom()){
+                    this.minHeap.push(this.maxHeap.pop());
+                    this.maxHeap.push(this.minHeap.pop());
+                }
+            }
+        }
+        findMedian(){
+            // console.log('----------------------------')
+            // console.log('max:',this.maxHeap.toString())
+            // console.log('min:',this.minHeap.toString())
+            // console.log(this.maxHeap.size(),this.minHeap.size(),this.maxHeap.top(),this.minHeap.top())
+            // console.log('----------------------------')
+            if (this.maxHeap.size() > this.minHeap.size()) {
+                return this.maxHeap.top();
+            }
+            else{
+                return 0.5 * (this.minHeap.top() + this.maxHeap.top());
+            }
+        }
+    };
+    $(()=>{
+        // var a = new PriorityQueue();
+        // a.push(41);
+        // console.log(a.toString());
+        // a.push(35);
+        // console.log(a.toString());
+        // a.push(2);
+        // console.log(a.toString());
+        // a.push(4);
+        // console.log(a.toString());
+        // a.push(5);
+        // console.log(a.toString());
+        // console.log(a.pop());
+        // console.log(a.toString());
+        // console.log(a.shift());
+        // console.log(a.toString());
+        // -------------------------
+        var obj = new MedianFinder();
+        obj.addNum(41);
+        console.log(obj.findMedian());
+        obj.addNum(35);
+        console.log(obj.findMedian());
+        obj.addNum(62);
+        console.log(obj.findMedian());
+        obj.addNum(4);
+        console.log(obj.findMedian());
+        obj.addNum(97);
+        console.log(obj.findMedian());
+        obj.addNum(108);
+        console.log(obj.findMedian());
+    })
+    
+    // ---------------------------
+    // Adding number 41
+    // MaxHeap lo: [41]
+    // MinHeap hi: []
+    // Median is 41
+    // =======================
+    // Adding number 35
+    // MaxHeap lo: [35]
+    // MinHeap hi: [41]
+    // Median is 38
+    // =======================
+    // Adding number 62
+    // MaxHeap lo: [41, 35]
+    // MinHeap hi: [62]
+    // Median is 41
+    // =======================
+    // Adding number 4
+    // MaxHeap lo: [35, 4]
+    // MinHeap hi: [41, 62]
+    // Median is 38
+    // =======================
+    // Adding number 97
+    // MaxHeap lo: [41, 35, 4]
+    // MinHeap hi: [62, 97]
+    // Median is 41
+    // =======================
+    // Adding number 108
+    // MaxHeap lo: [41, 35, 4]
+    // MinHeap hi: [62, 97, 108]
+    // Median is 51.5
+    ```
 
 ### 子集问题
 * 算法识别与思想
