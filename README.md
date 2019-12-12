@@ -2300,7 +2300,137 @@ $(()=>{
 ### 子集问题
 * 算法识别与思想
 
-    BFS处理数字的排列组合问题
+    BFS处理数字的排列组合问题，或使用回溯算法和dfs，实际上排列组合问题可转化为树状结构，先固定第一个条件，下面会出现n-1个条件，固定第二个条件会出现n-2个条件，如此类推。
+
+    ```txt
+    给定一个整数数组 nums，返回该数组所有可能的不重复子集（幂集）。
+    输入: nums = [1,2,3]
+    输出:
+    [
+      [3],
+      [1],
+      [2],
+      [1,2,3],
+      [1,3],
+      [2,3],
+      [1,2],
+      []
+    ]
+    ```
+
+    BFS
+    ```js
+    let twoDimensionUnique = (arr) => {
+        let set = new Set();
+        let res = arr.slice(0);
+        for(let i = 0;i < res.length;i++){
+            set.add(res[i].toString());
+        }
+        res = [];
+        for(let value of set){
+            res.push(Array.from(value.split(',').map(item=>parseInt(item)).filter(x=>!isNaN(x))));
+        }
+        return res;
+    }
+    let subsets = (nums) => {
+        let res = [[]];
+        nums.sort((a,b)=>a-b);
+        for(let i = 0;i < nums.length;i++){
+            let cnt = res.length;
+            for(let j = 0;j < cnt;j++){
+                let tmp = JSON.parse(JSON.stringify(res[j]));
+                tmp.push(nums[i]);
+                res.push(tmp);
+            }
+        }
+        return res;
+    };
+    let nums = [1,2,3]
+    console.log(subsets(nums))
+    ```
+
+    回溯(DFS)
+    ```js
+    let twoDimensionUnique = (arr) => {
+        let set = new Set();
+        let res = arr.slice(0);
+        for(let i = 0;i < res.length;i++){
+            set.add(res[i].toString());
+        }
+        res = [];
+        for(let value of set){
+            res.push(Array.from(value.split(',').map(item=>parseInt(item)).filter(x=>!isNaN(x))));
+        }
+        return res;
+    }
+    let subsets = (nums) => {
+        let res = [];
+        nums.sort((a,b)=>a-b);
+        traceback(nums, [], 0);
+
+        function traceback(arr, tmp, start) {
+            console.log('-------------------')
+            console.log('data1',arr,tmp,start)
+            res.push(tmp.slice(0));//需要深复制
+            console.log('res',res)
+            for (let i = start; i < arr.length; i++) {
+                if (i > start && nums[i] == nums[i - 1]) {
+                    continue;
+                }
+                tmp.push(nums[i]);
+                console.log('data2',arr,tmp,i)
+                traceback(arr, tmp, i + 1);
+                tmp.pop();
+                console.log('data3',arr,tmp,i)
+            }
+        }
+        
+        return res;
+        //固定[]为树的根节点，下面有分叉1,2,3，再下面有(12,123,13),(23)
+        //遍历树可以得到[ [], [ 1 ], [ 1, 2 ], [ 1, 2, 3 ], [ 1, 3 ], [ 2 ], [ 2, 3 ], [ 3 ] ]
+        // -------------------
+        // data1 [ 1, 2, 3 ] [] 0
+        // res [ [] ]
+        // data2 [ 1, 2, 3 ] [ 1 ] 0
+        // -------------------
+        // data1 [ 1, 2, 3 ] [ 1 ] 1
+        // res [ [], [ 1 ] ]
+        // data2 [ 1, 2, 3 ] [ 1, 2 ] 1
+        // -------------------
+        // data1 [ 1, 2, 3 ] [ 1, 2 ] 2
+        // res [ [], [ 1 ], [ 1, 2 ] ]
+        // data2 [ 1, 2, 3 ] [ 1, 2, 3 ] 2
+        // -------------------
+        // data1 [ 1, 2, 3 ] [ 1, 2, 3 ] 3
+        // res [ [], [ 1 ], [ 1, 2 ], [ 1, 2, 3 ] ]
+        // data3 [ 1, 2, 3 ] [ 1, 2 ] 2
+        // data3 [ 1, 2, 3 ] [ 1 ] 1
+        // data2 [ 1, 2, 3 ] [ 1, 3 ] 2
+        // -------------------
+        // data1 [ 1, 2, 3 ] [ 1, 3 ] 3
+        // res [ [], [ 1 ], [ 1, 2 ], [ 1, 2, 3 ], [ 1, 3 ] ]
+        // data3 [ 1, 2, 3 ] [ 1 ] 2
+        // data3 [ 1, 2, 3 ] [] 0
+        // data2 [ 1, 2, 3 ] [ 2 ] 1
+        // -------------------
+        // data1 [ 1, 2, 3 ] [ 2 ] 2
+        // res [ [], [ 1 ], [ 1, 2 ], [ 1, 2, 3 ], [ 1, 3 ], [ 2 ] ]
+        // data2 [ 1, 2, 3 ] [ 2, 3 ] 2
+        // -------------------
+        // data1 [ 1, 2, 3 ] [ 2, 3 ] 3
+        // res [ [], [ 1 ], [ 1, 2 ], [ 1, 2, 3 ], [ 1, 3 ], [ 2 ], [ 2, 3 ] ]
+        // data3 [ 1, 2, 3 ] [ 2 ] 2
+        // data3 [ 1, 2, 3 ] [] 1
+        // data2 [ 1, 2, 3 ] [ 3 ] 2
+        // -------------------
+        // data1 [ 1, 2, 3 ] [ 3 ] 3
+        // res [ [], [ 1 ], [ 1, 2 ], [ 1, 2, 3 ], [ 1, 3 ], [ 2 ], [ 2, 3 ], [ 3 ] ]
+        // data3 [ 1, 2, 3 ] [] 2
+        // [ [], [ 1 ], [ 1, 2 ], [ 1, 2, 3 ], [ 1, 3 ], [ 2 ], [ 2, 3 ], [ 3 ] ]
+    };
+    let nums = [1,2,3]
+    console.log(subsets(nums))
+    ```
 
 ### 二分变种
 * 算法识别与思想
