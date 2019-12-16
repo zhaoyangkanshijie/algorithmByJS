@@ -2585,7 +2585,104 @@ $(()=>{
 ### K路归并
 * 算法识别与思想
 
-    处理k个排好序的数据问题
+    处理k个排好序的数据问题,参考归并排序
+
+    ```txt
+    参考归并排序思路，合并 k 个有序链表，返回合并后的排序链表。
+    输入:
+    [
+        1->4->5,
+        1->3->4,
+        2->6
+    ]
+    输出: 1->1->2->3->4->4->5->6
+    ```
+
+    数据归并
+    ```js
+    class ListNode{
+        constructor(val){
+            this.val = val;
+            this.next = null;
+        }
+    }
+    let mergeKLists = (lists) => {
+        let len = lists.length;
+        if(len == 0){
+            return null;
+        }
+        if(len == 1){
+            return lists[0];
+        }
+        let mid = parseInt(len/2);
+        let left = lists.slice(0, mid);
+        let right = lists.slice(mid);
+
+        return mergeTwoLists(mergeKLists(left),mergeKLists(right));
+    };
+
+    let mergeTwoLists = (left,right) => {
+        let head = new ListNode(-1);
+        let current = head;
+        while(left && right){
+            if (left.val < right.val) {
+                current.next = left;
+                left = left.next;
+            }
+            else {
+                current.next = right;
+                right = right.next;
+            }
+            current = current.next;
+        }
+        if (left) {
+            current.next = left;
+        }
+        if (right) {
+            current.next = right;
+        }
+        return head.next;
+    }
+
+    let head1 = new ListNode(1);
+    let head1a = new ListNode(4);
+    let head1b = new ListNode(5);
+    head1.next = head1a;
+    head1a.next = head1b;
+
+    let head2 = new ListNode(1);
+    let head2a = new ListNode(3);
+    let head2b = new ListNode(4);
+    head2.next = head2a;
+    head2a.next = head2b;
+
+    let head3 = new ListNode(2);
+    let head3a = new ListNode(6);
+    head3.next = head3a;
+
+    let lists = [head1,head2,head3];
+    let list = mergeKLists(lists);
+    while(list){
+        console.log(list.val);
+        list = list.next;
+    }
+    ```
+
+### 0/1背包类型
+* 算法识别与思想
+
+    有限的背包容量，装入最大的物品价值总和，动态规划/回溯
+
+    ```txt
+    给定一个只包含正整数的非空数组。是否可以将这个数组分割成两个子集，使得两个子集的元素和相等。
+
+    每个数组中的元素不会超过 100
+    数组的大小不会超过 200
+
+    输入: [1, 5, 11, 5]
+    输出: true
+    解释: 数组可以分割成 [1, 5, 5] 和 [11]
+    ```
 
 ### 拓扑排序
 * 算法识别与思想
