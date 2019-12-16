@@ -2343,7 +2343,7 @@ $(()=>{
                 res.push(tmp);
             }
         }
-        return res;
+        return twoDimensionUnique(res);
     };
     let nums = [1,2,3]
     console.log(subsets(nums))
@@ -2385,7 +2385,7 @@ $(()=>{
             }
         }
         
-        return res;
+        return twoDimensionUnique(res);
         //固定[]为树的根节点，下面有分叉1,2,3，再下面有(12,123,13),(23)
         //遍历树可以得到[ [], [ 1 ], [ 1, 2 ], [ 1, 2, 3 ], [ 1, 3 ], [ 2 ], [ 2, 3 ], [ 3 ] ]
         // -------------------
@@ -2437,10 +2437,150 @@ $(()=>{
 
     对于排序好的数组、链表、矩阵，进行二分搜索、插入
 
+    ```js
+    let binarySearch1 = (nums, key) => {//查找中间与key相等的元素
+        let left = 0, right = nums.length - 1;
+        while (left <= right) {
+            let m = left + parseInt((right - left) / 2);
+            if (nums[m] == key) {
+                return m;
+            } else if (nums[m] > key) {
+                right = m - 1;
+            } else {
+                left = m + 1;
+            }
+        }
+        return -1;
+    }
+    let binarySearch2 = (nums, key) => {//查找第一个与key相等的元素
+        let left = 0, right = nums.length - 1;
+        while (left < right) {
+            let m = left + parseInt((right - left) / 2);
+            if (nums[m] < key) {
+                left = m + 1;
+            } else {
+                right = m;
+            }
+        }
+        if(nums[left] != key){
+            return -1;
+        }
+        return left;
+    }
+    let binarySearch3 = (nums, key) => {//查找最后一个与key相等的元素
+        let left = 0, right = nums.length - 1;
+        while (left < right) {
+            let m = left + parseInt((right - left) / 2);
+            if (m == left) {
+                break;
+            }
+            if (nums[m] <= key) {
+                left = m;
+            } else {
+                right = m - 1;
+            }
+        }
+        if(nums[right] != key){
+            return -1;
+        }
+        return right;
+    }
+    let binarySearch4 = (nums, key) => {//查找第一个大于key的元素(上确界)
+        let left = 0, right = nums.length - 1;
+        while (left < right) {
+            let m = left + parseInt((right - left) / 2);
+            if (m == left) {
+                break;
+            }
+            if (nums[m] <= key) {
+                left = m;
+            } else {
+                right = m;
+            }
+        }
+        if(nums[right] <= key){
+            return -1;
+        }
+        return right;
+    }
+    let binarySearch5 = (nums, key) => {//查找最后一个小于key的元素(下确界)
+        let left = 0, right = nums.length - 1;
+        while (left < right) {
+            let m = left + parseInt((right - left) / 2);
+            if (m == left) {
+                break;
+            }
+            if (nums[m] < key) {
+                left = m;
+            } else {
+                right = m - 1;
+            }
+        }
+        if(nums[right] >= key){
+            return -1;
+        }
+        return right;
+    }
+    let nums = [1,2,2,2,2,2,2,3,4,5];
+    let key = 2;
+    console.log(binarySearch1(nums,key))// 4
+    console.log(binarySearch2(nums,key))// 1
+    console.log(binarySearch3(nums,key))// 6
+    console.log(binarySearch4(nums,key))// 7
+    console.log(binarySearch5(nums,key))// 0
+    ```
+
 ### 前K个系列
 * 算法识别与思想
 
-    求解最大/最小/最频繁的K个元素，使用优先队列
+    求解最大/最小/最频繁的K个元素，统计排序
+
+    ```txt
+    给一非空的单词列表，返回前 k 个出现次数最多的单词。
+
+    返回的答案应该按单词出现频率由高到低排序。如果不同的单词有相同出现频率，按字母顺序排序。
+
+    输入: ["i", "love", "leetcode", "i", "love", "coding"], k = 2
+    输出: ["i", "love"]
+    解析: "i" 和 "love" 为出现次数最多的两个单词，均为2次。
+    注意，按字母顺序 "i" 在 "love" 之前。。
+    ```
+
+    字典统计+二重排序
+    ```js
+    let dictionary = new Array();
+    let topKFrequent = (words, k) => {
+        //let dictionary = new Array();
+        for(let i = 0;i < words.length;i++){
+            if(!dictionary[words[i]]){
+                dictionary[words[i]] = 1;
+            }
+            else{
+                dictionary[words[i]]++;
+            }
+        }
+        //console.log(dictionary)
+        let result = Object.keys(dictionary).sort((a,b)=>{
+            if(dictionary[a] == dictionary[b]){
+                if(a > b){
+                    return 1;
+                }
+                else{
+                    return -1;
+                }
+            }
+            return dictionary[b] - dictionary[a];
+        });
+        for(let value of result){
+            console.log(value,dictionary[value])
+        }
+        return result.slice(0,k);
+    };
+    let words = ["rmrypv","zgsedk","jlmetsplg","wnfbo","hnnftqf","bxlr","sviavwoxss","jdbgvc","zddeno","rxgw","hnnftqf","hdmvplne","rlmdt","jlmetsplg","ous","rmrypv","fwxulnpit","dmhuq","rxgw","ledleb","bxlr","indbvb","ckqqibnx","cub","ijww","ehd","hfhlfqzkcn","sviavwoxss","rxgw","bxjxpfp","mgqj","oic","ptk","fwxulnpit","ijww","sviavwoxss","bgfvfa","zfkgsudxq","alkq","dmhuq","zddeno","rxgw","zgsedk","amarxpg","bgfvfa","wnfbo","sviavwoxss","sviavwoxss","alkq","nmclxk","zgsedk","bwowfvira","ous","bxlr","zddeno","rxgw","ous","wnfbo","rmrypv","sviavwoxss","ehd","zgsedk","jlmetsplg","abxvhyehv","ledleb","wnfbo","bgfvfa","bwowfvira","amarxpg","wnfbo","bwowfvira","dmhuq","ouy","bxlr","rxgw","oic","hnnftqf","ledleb","rlmdt","oldainprua","ous","ckqqibnx","dmhuq","hnnftqf","oic","jlmetsplg","ppn","amarxpg","jlgfgwb","bxlr","bwowfvira","hdmvplne","oic","ledleb","bwowfvira","oic","ptk","dmhuq","abxvhyehv","ckqqibnx","indbvb","ypzfk","rmrypv","bxjxpfp","amarxpg","dmhuq","sviavwoxss","bwowfvira","zfkgsudxq","wnfbo","rxgw","jxkvrmajri","cub","abxvhyehv","bwowfvira","indbvb","ehd","ckqqibnx","oic","ptk","hnnftqf","ouy","oic","zgsedk","abxvhyehv","ypzfk","ptk","sviavwoxss","rmrypv","oic","ous","abxvhyehv","hnnftqf","hfhlfqzkcn","ledleb","cub","ppn","zddeno","indbvb","oic","jlmetsplg","ouy","bwowfvira","bklij","gucayxp","zfkgsudxq","hfhlfqzkcn","zddeno","ledleb","zfkgsudxq","hnnftqf","bgfvfa","jlmetsplg","indbvb","ehd","wnfbo","hnnftqf","rlmdt","bxlr","indbvb","jdbgvc","jlmetsplg","cub","jlgfgwb","ypzfk","indbvb","dmhuq","jlmetsplg","zgsedk","rmrypv","cub","rxgw","ledleb","rxgw","sviavwoxss","ckqqibnx","hdmvplne","dmhuq","wnfbo","jlmetsplg","bxlr","zfkgsudxq","bxjxpfp","ledleb","indbvb","ckqqibnx","ous","ckqqibnx","cub","ous","abxvhyehv","bxlr","hfhlfqzkcn","hfhlfqzkcn","oic","ten","amarxpg","indbvb","cub","alkq","alkq","sviavwoxss","indbvb","bwowfvira","ledleb"];
+    let k = 41;
+    let arr = topKFrequent(words,k)
+    console.log(arr);
+    ```
 
 ### K路归并
 * 算法识别与思想
