@@ -2684,6 +2684,52 @@ $(()=>{
     解释: 数组可以分割成 [1, 5, 5] 和 [11]
     ```
 
+    动态规划/回溯
+    ```js
+    let canPartition = (nums) => {
+        let sum = nums.reduce(function(prev, curr, idx, arr){
+            return prev + curr;
+        });
+        if(sum % 2 == 1){
+            return false;
+        }
+        else{
+            let dividedSum = sum / 2;
+            //return dp(nums,dividedSum);
+            return traceback(nums.sort((a,b)=>b-a),dividedSum,0);
+        }
+    }
+
+    let traceback = (nums,sum,index) => {
+        if (index >= nums.length || nums[index] > sum) {
+            return false;
+        }
+
+        if (nums[index] == sum) {
+            return true;
+        }
+        //分是否选择第index个数字入背包2种情况
+        return traceback(nums, sum - nums[index], index + 1)||traceback(nums, sum, index + 1);
+    }
+
+    let dp = (nums,sum) => {
+        let arr = new Array(sum+1).fill(false);
+        arr[0] = true;
+        for(let i = 0;i < nums.length;i++){
+            for(let j = sum;j >= nums[i];j--){
+                if (arr[j - nums[i]]){
+                    arr[j] = true;
+                }
+            }
+        }
+        //console.log(arr)
+        return arr[sum];
+    }
+
+    let nums = [2,2,3,5];
+    console.log(canPartition(nums));
+    ```
+
 ### 拓扑排序
 * 算法识别与思想
 
