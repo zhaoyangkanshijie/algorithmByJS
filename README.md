@@ -1234,7 +1234,7 @@ $(function () {
 
     * 来源：[力扣（LeetCode）](https://leetcode-cn.com)
 
-    *  最长上升子序列
+    *  最长上升子序列(线性dp)
 
         ```txt
         输入: [10,9,2,5,3,7,101,18]
@@ -1358,6 +1358,14 @@ $(function () {
             console.log(maxEnvelopes(envelopes));
         });
         ```
+
+    * 0/1背包问题(树状dp)
+
+        [0/1背包问题](#0/1背包类型)
+
+    * 最短路径(矩阵dp)
+
+        [最短路径算法](#最短路径算法dijkstra)
 
 ### 滑动窗口
 * 算法识别与思想
@@ -2066,6 +2074,9 @@ $(()=>{
 
     需要把数字分成两队的问题，一边最大堆找最大元素，一边最小堆找最小元素，也可求中位数，使用优先队列（先进最大数先出，如医院急诊室排队）
 
+* 来源：[力扣（LeetCode）](https://leetcode-cn.com)
+
+    * 中位数
     ```txt
     设计一个支持以下两种操作的数据结构：
 
@@ -2302,6 +2313,9 @@ $(()=>{
 
     BFS处理数字的排列组合问题，或使用回溯算法和dfs，实际上排列组合问题可转化为树状结构，先固定第一个条件，下面会出现n-1个条件，固定第二个条件会出现n-2个条件，如此类推。
 
+* 来源：[力扣（LeetCode）](https://leetcode-cn.com)
+
+    * 幂集
     ```txt
     给定一个整数数组 nums，返回该数组所有可能的不重复子集（幂集）。
     输入: nums = [1,2,3]
@@ -2437,6 +2451,7 @@ $(()=>{
 
     对于排序好的数组、链表、矩阵，进行二分搜索、插入
 
+* 样例
     ```js
     let binarySearch1 = (nums, key) => {//查找中间与key相等的元素
         let left = 0, right = nums.length - 1;
@@ -2535,6 +2550,9 @@ $(()=>{
 
     求解最大/最小/最频繁的K个元素，统计排序
 
+* 来源：[力扣（LeetCode）](https://leetcode-cn.com)
+
+    * 前k个最频繁的单词
     ```txt
     给一非空的单词列表，返回前 k 个出现次数最多的单词。
 
@@ -2587,6 +2605,9 @@ $(()=>{
 
     处理k个排好序的数据问题,参考归并排序
 
+* 来源：[力扣（LeetCode）](https://leetcode-cn.com)
+
+    * 合并 k 个有序链表
     ```txt
     参考归并排序思路，合并 k 个有序链表，返回合并后的排序链表。
     输入:
@@ -2673,6 +2694,9 @@ $(()=>{
 
     有限的背包容量，装入最大的物品价值总和，动态规划/回溯
 
+* 来源：[力扣（LeetCode）](https://leetcode-cn.com)
+
+    * 子集相等
     ```txt
     给定一个只包含正整数的非空数组。是否可以将这个数组分割成两个子集，使得两个子集的元素和相等。
 
@@ -2733,4 +2757,119 @@ $(()=>{
 ### 拓扑排序
 * 算法识别与思想
 
-    寻找一种线性的顺序，这些元素之间具有依懒性，使用有向无环图
+    寻找一种线性的顺序，这些元素之间具有依懒性，使用有向无环图(图论)，需要遍历图(DFS/BFS)
+
+* 来源：[力扣（LeetCode）](https://leetcode-cn.com)
+
+* 样例
+
+    1. 判断是否能完成课程
+    ```txt
+    总共有 n 门课需要选，记为 0 到 n-1
+    在选修某些课程之前需要一些先修课程。 例如，想要学习课程 0 ，需要先完成课程 1 ，我们用一个匹配来表示他们: [0,1]
+    判断是否可能完成所有课程的学习？
+
+    输入: 2, [[1,0]] 
+    输出: true
+
+    输入: 2, [[1,0],[0,1]]
+    输出: false
+    ```
+
+    bfs/贪心算法
+    ```js
+    //bfs/贪心算法
+    let canFinish = (numCourses, prerequisites) => {
+        //记录入度表
+        let indegree = new Array(numCourses).fill(0);
+        for(let i = 0;i < prerequisites.length;i++){
+            indegree[prerequisites[i][0]]++;
+        }
+        //所有入度为0(起始点)的进入队列
+        let queue = [];
+        for(let i = 0;i < numCourses;i++){
+            if(indegree[i] == 0){
+                queue.push(i);
+            }
+        }
+        let count = 0;
+        while(queue.length > 0){
+            //console.log('当前队列：',queue)
+            //console.log('入度表：',indegree)
+            let current = queue.shift();//移除旧起始点
+            //console.log('移出的元素',current)
+            //console.log('当前队列2：',queue)
+            count++;
+            for(let i = 0;i < prerequisites.length;i++){
+                //console.log('prerequisites：',prerequisites[i])
+                //console.log('下一个点入度：',indegree[prerequisites[i][0]])
+                if(prerequisites[i][1] == current){//找到当前起始点的下一个点
+                    indegree[prerequisites[i][0]]--;//下一个点的入度减1
+                    //console.log('下一个点入度2：',indegree[prerequisites[i][0]])
+                    if(indegree[prerequisites[i][0]] == 0){//下一个点的入度为0，即成为起始点
+                        queue.push(prerequisites[i][0]);//向队列加入这个起始点
+                        //console.log('当前队列3：',queue)
+                    }
+                }
+            }
+            //console.log('-----------')
+        }
+        return numCourses == count;
+    };
+    let numCourses = 3;
+    let prerequisites = [[1,0],[2,1]];
+    console.log(canFinish(numCourses, prerequisites));
+    ```
+
+    dfs
+    ```js
+    //dfs
+    let canFinish = (numCourses, prerequisites) => {
+        let adjacency = new Array(numCourses).fill(0).map(()=>Array(numCourses).fill(0));
+        //0表示未被访问，-1表示被其他节点启动的dfs访问，1表示被当前节点启动的dfs访问
+        let visit = new Array(numCourses).fill(0);
+        for(let i = 0;i < prerequisites.length;i++){
+            adjacency[prerequisites[i][1]][prerequisites[i][0]] = 1;
+        }
+        for(let i = 0;i < numCourses;i++){
+            if(hasCycle(adjacency, visit, i)) return false;
+        }
+        return true;
+    };
+    let hasCycle = (adjacency,visit,i) => {
+        if(visit[i] == 1) return true;//二次访问，有环
+        if(visit[i] == -1) return false;//无环
+        visit[i] = 1;//预设有环
+        for(let j = 0; j < adjacency.length; j++) {
+            if(adjacency[i][j] == 1 && hasCycle(adjacency, visit, j)) return true;
+        }
+        visit[i] = -1;//设为无环
+        return false;
+    }
+    let numCourses = 3;
+    let prerequisites = [[1,0],[2,1]];
+    console.log(canFinish(numCourses, prerequisites));
+    ```
+
+    2. 输出课程学习顺序
+    ```txt
+    条件同上，输出其中一种课程学习顺序，如[0,1]，无法完成学习，则输出[]
+    ```
+
+    ```js
+
+    ```
+
+    3. 最多能够学习的课程
+    ```txt
+    这里有 n 门不同的在线课程，他们按从 1 到 n 编号。每一门课程有一定的持续上课时间（课程时间）t 以及关闭时间第 d 天。一门课要持续学习 t 天直到第 d 天时要完成，你将会从第 1 天开始。
+
+    给出 n 个在线课程用 (t, d) 对表示。你的任务是找出最多可以修几门课。
+
+    输入: [[100, 200], [200, 1300], [1000, 1250], [2000, 3200]]
+    输出: 3
+    ```
+
+    ```js
+
+    ```
