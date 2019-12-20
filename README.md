@@ -2728,23 +2728,25 @@ $(()=>{
 
 * 样例
 
-    1. 判断是否能完成课程
+    课程表
     ```txt
     总共有 n 门课需要选，记为 0 到 n-1
     在选修某些课程之前需要一些先修课程。 例如，想要学习课程 0 ，需要先完成课程 1 ，我们用一个匹配来表示他们: [0,1]
-    判断是否可能完成所有课程的学习？
+    判断是否可能完成所有课程的学习,如果可以，给出一种可能的顺序，如果不能，输出空数组
 
     输入: 2, [[1,0]] 
-    输出: true
+    输出: [0,1]
 
     输入: 2, [[1,0],[0,1]]
-    输出: false
+    输出: []
+
+    输入: 4, [[1,0],[2,0],[3,1],[3,2]]
+    输出: [0,1,2,3]或[0,2,1,3]
     ```
 
-    bfs/贪心算法
     ```js
     //bfs/贪心算法
-    let canFinish = (numCourses, prerequisites) => {
+    let canFinish2 = (numCourses, prerequisites) => {
         //记录入度表
         let indegree = new Array(numCourses).fill(0);
         for(let i = 0;i < prerequisites.length;i++){
@@ -2758,10 +2760,12 @@ $(()=>{
             }
         }
         let count = 0;
+        let result = [];
         while(queue.length > 0){
             //console.log('当前队列：',queue)
             //console.log('入度表：',indegree)
             let current = queue.shift();//移除旧起始点
+            result.push(current);
             //console.log('移出的元素',current)
             //console.log('当前队列2：',queue)
             count++;
@@ -2779,15 +2783,13 @@ $(()=>{
             }
             //console.log('-----------')
         }
-        return numCourses == count;
+        if(numCourses == count){
+            return result;
+        }
+        else{
+            return [];
+        }
     };
-    let numCourses = 3;
-    let prerequisites = [[1,0],[2,1]];
-    console.log(canFinish(numCourses, prerequisites));
-    ```
-
-    dfs
-    ```js
     //dfs
     let canFinish = (numCourses, prerequisites) => {
         let adjacency = new Array(numCourses).fill(0).map(()=>Array(numCourses).fill(0));
@@ -2796,45 +2798,25 @@ $(()=>{
         for(let i = 0;i < prerequisites.length;i++){
             adjacency[prerequisites[i][1]][prerequisites[i][0]] = 1;
         }
+        let result = [];
         for(let i = 0;i < numCourses;i++){
-            if(hasCycle(adjacency, visit, i)) return false;
+            if(hasCycle(adjacency, visit, i, result)) return [];
         }
-        return true;
+        return result.reverse();
     };
-    let hasCycle = (adjacency,visit,i) => {
+    let hasCycle = (adjacency,visit,i, result) => {
         if(visit[i] == 1) return true;//二次访问，有环
         if(visit[i] == -1) return false;//无环
         visit[i] = 1;//预设有环
         for(let j = 0; j < adjacency.length; j++) {
-            if(adjacency[i][j] == 1 && hasCycle(adjacency, visit, j)) return true;
+            if(adjacency[i][j] == 1 && hasCycle(adjacency, visit, j, result)) return true;
         }
         visit[i] = -1;//设为无环
+        result.push(i);
         return false;
     }
-    let numCourses = 3;
-    let prerequisites = [[1,0],[2,1]];
+
+    let numCourses = 4;
+    let prerequisites = [[1,0],[2,0],[3,1],[3,2]];
     console.log(canFinish(numCourses, prerequisites));
-    ```
-
-    2. 输出课程学习顺序
-    ```txt
-    条件同上，输出其中一种课程学习顺序，如[0,1]，无法完成学习，则输出[]
-    ```
-
-    ```js
-
-    ```
-
-    3. 最多能够学习的课程
-    ```txt
-    这里有 n 门不同的在线课程，他们按从 1 到 n 编号。每一门课程有一定的持续上课时间（课程时间）t 以及关闭时间第 d 天。一门课要持续学习 t 天直到第 d 天时要完成，你将会从第 1 天开始。
-
-    给出 n 个在线课程用 (t, d) 对表示。你的任务是找出最多可以修几门课。
-
-    输入: [[100, 200], [200, 1300], [1000, 1250], [2000, 3200]]
-    输出: 3
-    ```
-
-    ```js
-
     ```
