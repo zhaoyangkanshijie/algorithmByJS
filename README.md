@@ -2076,7 +2076,7 @@ $(()=>{
 
 * 来源：[力扣（LeetCode）](https://leetcode-cn.com)
 
-    * 中位数
+    * 数据流的中位数
     ```txt
     设计一个支持以下两种操作的数据结构：
 
@@ -2092,175 +2092,140 @@ $(()=>{
     findMedian() -> 2
     ```
 
-    优先队列（最大堆，最小堆）
+    优先队列（最大堆，最小堆）：push(加入一个数,堆调整,log2n)，pop(移除顶元素,堆调整,log2n)。若要求排序，则使用二分插入排序,二分插入O(log2n+n)，log2n用于找位置，n用于移位，取出O(1)。所以速度上优先队列O(log2n)+O(log2n)>二分插入O(log2n+n)+O(1)
     ```js
-    class PriorityQueue{
-        //-1从小到大，1从大到小
-        constructor(compare = 1){
-            this.data = [];
-            this.compare = compare;
-        }
-        push(number){
-            if(this.compare == 1){
-                if(this.data.length == 0){
-                    this.data.push(number);
-                }
-                else{
-                    let low = 0;
-                    let high = this.data.length - 1;
-                    let mid = 0;
-                    while(low < high){
-                        mid = low + parseInt((high - low) / 2);
-                        if(this.data[mid] > number){
-                            low = mid + 1;
-                        }
-                        else{
-                            high = mid;
-                        }
-                    }
-                    mid = low + parseInt((high - low) / 2);
-                    if(this.data[mid] > number){
-                        this.data.splice(mid+1,0,number);
-                    }
-                    else{
-                        this.data.splice(mid,0,number);
-                    }
-                }
+    class PriorityQueue {
+        constructor(compareFunction) {
+            if (compareFunction) {
+                this.compareFunction = compareFunction;
             }
-            else{
-                if(this.data.length == 0){
-                    this.data.push(number);
+            else {
+                this.compareFunction = (a, b) => a > b;
+            }
+    
+            this.heap = [];
+            this.size = 0;
+        }
+    
+        //获取父节点下标
+        parent(index) {
+            let parent = Math.floor((index - 1) / 2);
+            if (index > this.size - 1 || parent < 0) return null;
+            return parent;
+        }
+    
+        //获取左节点下标
+        leftChild(index) {
+            let left = 2 * index + 1;
+            if (left > this.size - 1) return null;
+            return left;
+        }
+    
+        //获取右节点下标
+        rightChild(index) {
+            let right = 2 * index + 2;
+            if (right > this.size - 1) return null;
+            return right;
+        }
+    
+        //元素下沉 对下标为i的元素向下进行调整，使堆保持其性质
+        downward(index) {
+            let left = this.leftChild(index);
+            let right = this.rightChild(index);
+            let largest = null;
+            if (left != null) { //左孩子为空则右孩子一定为空
+                if (right == null) {
+                    largest = left;
                 }
-                else{
-                    let low = 0;
-                    let high = this.data.length - 1;
-                    let mid = 0;
-                    while(low < high){
-                        mid = low + parseInt((high - low) / 2);
-                        if(this.data[mid] > number){
-                            high = mid;
-                        }
-                        else{
-                            low = mid + 1;
-                        }
-                    }
-                    mid = low + parseInt((high - low) / 2);
-                    if(this.data[mid] < number){
-                        this.data.splice(mid+1,0,number);
-                    }
-                    else{
-                        this.data.splice(mid,0,number);
-                    }
+                else {
+                    largest = this.compareFunction(this.heap[left], this.heap[right]) ? left : right;
+                }
+                if (this.compareFunction(this.heap[index], this.heap[largest])) {
+                    return;//父节点大于子节点，则不需要调整
+                }
+                else {
+                    //父节点小于子节点，交换节点值，递归继续调整
+                    let tmp = this.heap[index];
+                    this.heap[index] = this.heap[largest];
+                    this.heap[largest] = tmp;
+                    this.downward(largest);
                 }
             }
         }
-        pop(){
-            let index = this.topIndex();
-            if(index != -1){
-                let tmp = this.data[index];
-                this.data.splice(index,1);
-                return tmp;
+    
+        //元素上浮 对下标为i的元素进行向上调整，使堆保持其性质
+        upward(index) {
+            let parent = this.parent(index);
+            while (index > 0 && this.compareFunction(this.heap[index], this.heap[parent])) {
+                //当前元素比父元素大，则向上调整
+                let tmp = this.heap[index];
+                this.heap[index] = this.heap[parent];
+                this.heap[parent] = tmp;
+                index = parent;
+                parent = this.parent(index);
             }
-            else{
+        }
+    
+        empty() {
+            return this.size == 0;
+        }
+    
+        push(item) {
+            //尾部加入元素，堆调整尾部元素
+            this.size += 1;
+            if (this.heap.length >= this.size) {
+                this.heap[this.size-1] = item;
+            }
+            else {
+                this.heap.push(item);
+            }
+            this.upward(this.size-1);
+        }
+    
+        top() {
+            if(this.size == 0){
                 return null;
             }
-        }
-        topIndex(){
-            return this.data.length > 0 ? 0 : -1;
-        }
-        top(){
-            let index = this.topIndex();
-            if(index != -1){
-                return this.data[index];
-            }
             else{
-                return null;
+                return this.heap[0];
             }
         }
-        shift(){
-            let index = this.bottomIndex();
-            if(index != -1){
-                let tmp = this.data[index];
-                this.data.splice(index,1);
-                return tmp;
-            }
-            else{
-                return null;
-            }
-        }
-        bottomIndex(){
-            return this.data.length > 0 ? this.data.length - 1 : -1;
-        }
-        bottom(){
-            let index = this.bottomIndex();
-            if(index != -1){
-                return this.data[index];
-            }
-            else{
-                return null;
-            }
-        }
-        size() {
-            return this.data.length;
-        }
-        toString(){
-            return this.data.toString();
+    
+        pop() {
+            //取出顶部元素，用最后一个元素代替，堆调整顶部元素
+            let topItem = this.heap[0];
+            this.heap[0] = this.heap[this.size-1];
+            this.size -= 1;
+            this.heap.pop();
+            this.downward(0);
+            return topItem;
         }
     }
     class MedianFinder{
         constructor(){
-            this.maxHeap = new PriorityQueue(1);
-            this.minHeap = new PriorityQueue(-1);
+            this.maxHeap = new PriorityQueue();
+            this.minHeap = new PriorityQueue((a,b) => a < b);
+            this.count = 0;
         }
         addNum(num){
-            if (this.maxHeap.size() == 0 || num < this.minHeap.top()) {
-                this.maxHeap.push(num);
-                if (this.maxHeap.size() > this.minHeap.size() + 1) {
-                    this.minHeap.push(this.maxHeap.pop());
-                }
-            }
-            else {
-                this.minHeap.push(num);
-                if (this.minHeap.size() > this.maxHeap.size()) {
-                    this.maxHeap.push(this.minHeap.pop());
-                }
-                if(this.maxHeap.top() > this.minHeap.bottom()){
-                    this.minHeap.push(this.maxHeap.pop());
-                    this.maxHeap.push(this.minHeap.pop());
-                }
+            //最小堆取尽量大的元素，最大堆取尽量小的元素，最大堆元素数量保持大于等于最小堆
+            this.count++;
+            this.maxHeap.push(num);
+            this.minHeap.push(this.maxHeap.pop());
+            if (this.count % 2 == 1) {
+                this.maxHeap.push(this.minHeap.pop());
             }
         }
         findMedian(){
-            // console.log('----------------------------')
-            // console.log('max:',this.maxHeap.toString())
-            // console.log('min:',this.minHeap.toString())
-            // console.log(this.maxHeap.size(),this.minHeap.size(),this.maxHeap.top(),this.minHeap.top())
-            // console.log('----------------------------')
-            if (this.maxHeap.size() > this.minHeap.size()) {
-                return this.maxHeap.top();
+            if (this.count % 2 == 0) {
+                return (this.maxHeap.top() + this.minHeap.top()) / 2;
             }
-            else{
-                return 0.5 * (this.minHeap.top() + this.maxHeap.top());
+            else {
+                return this.maxHeap.top();
             }
         }
     };
     $(()=>{
-        // var a = new PriorityQueue();
-        // a.push(41);
-        // console.log(a.toString());
-        // a.push(35);
-        // console.log(a.toString());
-        // a.push(2);
-        // console.log(a.toString());
-        // a.push(4);
-        // console.log(a.toString());
-        // a.push(5);
-        // console.log(a.toString());
-        // console.log(a.pop());
-        // console.log(a.toString());
-        // console.log(a.shift());
-        // console.log(a.toString());
-        // -------------------------
         var obj = new MedianFinder();
         obj.addNum(41);
         console.log(obj.findMedian());
@@ -2278,33 +2243,33 @@ $(()=>{
     
     // ---------------------------
     // Adding number 41
-    // MaxHeap lo: [41]
-    // MinHeap hi: []
+    // MaxHeap: [41]
+    // MinHeap: []
     // Median is 41
     // =======================
     // Adding number 35
-    // MaxHeap lo: [35]
-    // MinHeap hi: [41]
+    // MaxHeap: [35]
+    // MinHeap: [41]
     // Median is 38
     // =======================
     // Adding number 62
-    // MaxHeap lo: [41, 35]
-    // MinHeap hi: [62]
+    // MaxHeap: [41, 35]
+    // MinHeap: [62]
     // Median is 41
     // =======================
     // Adding number 4
-    // MaxHeap lo: [35, 4]
-    // MinHeap hi: [41, 62]
+    // MaxHeap: [35, 4]
+    // MinHeap: [41, 62]
     // Median is 38
     // =======================
     // Adding number 97
-    // MaxHeap lo: [41, 35, 4]
-    // MinHeap hi: [62, 97]
+    // MaxHeap: [41, 35, 4]
+    // MinHeap: [62, 97]
     // Median is 41
     // =======================
     // Adding number 108
-    // MaxHeap lo: [41, 35, 4]
-    // MinHeap hi: [62, 97, 108]
+    // MaxHeap: [41, 35, 4]
+    // MinHeap: [62, 97, 108]
     // Median is 51.5
     ```
 
