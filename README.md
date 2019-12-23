@@ -2820,3 +2820,120 @@ $(()=>{
     let prerequisites = [[1,0],[2,0],[3,1],[3,2]];
     console.log(canFinish(numCourses, prerequisites));
     ```
+
+### 位运算
+* 算法识别与思想
+
+    需要使用到进制（数位统计与运算），取反，补码，加解密，位运算符性质。要求线性时间复杂度和没有额外空间或常数空间，但没有更好的办法。
+
+* 来源：[力扣（LeetCode）](https://leetcode-cn.com)
+
+1. 样例1
+
+    缺失数字1
+    ```txt
+    给定一个包含 0, 1, 2, ..., n 中 n 个数的序列，找出 0 .. n 中没有出现在序列中的那个数。
+
+    输入: [3,0,1]
+    输出: 2
+    ```
+
+    位运算
+    ```js
+    //由于异或运算（XOR）满足结合律，并且对一个数进行两次完全相同的异或运算会得到原来的数，因此我们可以通过异或运算找到缺失的数字。
+    //missing =4∧(0∧0)∧(1∧1)∧(2∧3)∧(3∧4)
+    //        =(4∧4)∧(0∧0)∧(1∧1)∧(3∧3)∧2
+    //        =0∧0∧0∧0∧2
+    //        =2
+    let missingNumber = (nums) => {
+        let missing = nums.length;
+        for (let i = 0; i < nums.length; i++) {
+            missing ^= i ^ nums[i];
+        }
+        return missing;
+    }
+    ```
+
+2. 样例2
+
+    只出现一次的数字1
+    ```txt
+    给定一个非空整数数组，除了某个元素只出现一次以外，其余每个元素均出现两次。找出那个只出现了一次的元素。算法应该具有线性时间复杂度。
+
+    输入: [4,1,2,1,2]
+    输出: 4
+    ```
+
+    位运算
+    ```js
+    //由于异或运算（XOR）满足结合律，并且对一个数进行两次完全相同的异或运算会得到原来的数，因此我们可以通过异或运算找到缺失的数字。
+    //missing =4∧(1∧2)∧(1∧2)
+    //        =(1∧1)∧(2∧2)∧4
+    //        =0∧0∧4
+    //        =4
+    let singleNumber = (nums) => {
+        let missing = 0;
+        for (let i = 0; i < nums.length; i++) {
+            missing ^= nums[i];
+        }
+        return missing;
+    };
+    let nums = [4,1,2,1,2];
+    console.log(singleNumber(nums))
+    ```
+
+3. 样例3
+
+    只出现一次的数字2
+    ```txt
+    给定一个非空整数数组，除了某个元素只出现一次以外，其余每个元素均出现了三次。找出那个只出现了一次的元素。算法应该具有线性时间复杂度。
+
+    输入: [0,1,0,1,0,1,99]
+    输出: 99
+    ```
+
+    位运算
+    ```js
+    //异或运算的含义是二进制下不考虑进位的加法
+    //因此，此题需要实现三进制的异或运算，用到数位模拟 0 # 1 = 1，1 # 1 = 2，2 # 1 = 0
+    //ones ^= num：记录至目前元素num，二进制第num个数出现 1 次（当第num个数出现 3 次时有 ones = 1 ，与 twos = 1 共同表示“出现 3 次”）；
+    //twos |= ones & num：记录至目前元素num，二进制第num个数出现 2 次 （当第num个数出现 2 次时，twos = 1 且 ones = 0 ）；
+    //threes = ones & twos：记录至目前元素num，二进制第num个数出现 3 次（即当 ones 和 twos 对应位同时为 1 时 three = 1 ）。
+    //one &= ~threes, two &= ~threes：将 ones, twos 中出现了 3 次的对应位清零，实现 “不考虑进位的三进制加法” 。
+    let singleNumber = (nums) => {
+        let ones = 0,twos = 0;//threes = 0
+        for (let i = 0; i < nums.length; i++) {
+            //num                    //n=00  n=01  n=00  n=01  n=00  n=01  n=11
+            //twos |= ones & nums[i];//i=0,0 i=1,0 i=2,0 i=3,1 i=4,1 i=5,1 i=6,0
+            //ones ^= nums[i];       //i=0,0 i=1,1 i=2,1 i=3,0 i=4,0 i=5,1 i=6,2
+            //threes = ones & twos;  //i=0,0 i=1,0 i=2,0 i=3,0 i=4,0 i=5,1 i=6,0
+            //ones &= ~threes;       //i=0,0 i=1,1 i=2,1 i=3,0 i=4,0 i=5,0 i=6,2
+            //twos &= ~threes;       //i=0,0 i=1,0 i=2,0 i=3,1 i=4,1 i=5,0 i=6,0
+            //第num个数出现	1次	 2次 3次  4次 5次 6次	...
+            //ones	        1	0	0	1	0	0	...
+            //twos	        0	1	0	0	1	0	...
+            //threes        0	0	1	0	0	1	...
+            //简化为:
+            ones = ones ^ nums[i] & ~twos;//当 num = 1num=1 时，只当 ones = twos = 0ones=twos=0 时将 onesones 置 11，代表出现 3N+13N+1 次；其余置 00，根据 twostwos 值分别代表出现 3N3N 次和 3N+23N+2 次；当 num = 0num=0 时，onesones 不变；
+            twos = twos ^ nums[i] & ~ones;//当 num = 1num=1 时，只当 ones = twos = 0ones=twos=0 时将 twostwos 置 11，代表出现 3N+23N+2 次；其余置 00，根据 onesones 值分别代表出现 3N3N 次和 3N+13N+1 次。当 num = 0num=0 时，twostwos 不变。
+        }
+        return ones;
+    };
+    let nums = [0,1,0,1,0,1,2];
+    console.log(singleNumber(nums))
+    ```
+
+4. 样例4
+
+    只出现一次的数字3
+    ```txt
+    给定一个整数数组 nums，其中恰好有两个元素只出现一次，其余所有元素均出现两次。 找出只出现一次的那两个元素。算法应该具有线性时间复杂度。
+
+    输入: [1,2,1,3,2,5]
+    输出: [3,5]
+    ```
+
+    位运算
+    ```js
+    
+    ```
