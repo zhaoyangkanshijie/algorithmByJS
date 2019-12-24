@@ -2914,8 +2914,8 @@ $(()=>{
             //twos	        0	1	0	0	1	0	...
             //threes        0	0	1	0	0	1	...
             //简化为:
-            ones = ones ^ nums[i] & ~twos;//当 num = 1num=1 时，只当 ones = twos = 0ones=twos=0 时将 onesones 置 11，代表出现 3N+13N+1 次；其余置 00，根据 twostwos 值分别代表出现 3N3N 次和 3N+23N+2 次；当 num = 0num=0 时，onesones 不变；
-            twos = twos ^ nums[i] & ~ones;//当 num = 1num=1 时，只当 ones = twos = 0ones=twos=0 时将 twostwos 置 11，代表出现 3N+23N+2 次；其余置 00，根据 onesones 值分别代表出现 3N3N 次和 3N+13N+1 次。当 num = 0num=0 时，twostwos 不变。
+            ones = ones ^ nums[i] & ~twos;//当 num = 1 时，只当 ones = twos = 0 时将 ones 置 1，代表出现 3N+1 次；其余置 0，根据 twos 值分别代表出现 3N 次和 3N+2 次；当 num = 0 时，ones 不变；
+            twos = twos ^ nums[i] & ~ones;//当 num = 1 时，只当 ones = twos = 0 时将 twos 置 1，代表出现 3N+2 次；其余置 0，根据 ones 值分别代表出现 3N 次和 3N+1 次。当 num = 0 时，twos 不变。
         }
         return ones;
     };
@@ -2935,5 +2935,39 @@ $(()=>{
 
     位运算
     ```js
-    
+    //a^b=两值不同为1的二进制位
+    //~a+1=-a
+    //a&(~a+1)=最低位的1
+    //根据最低位1的不同，分成两组异或，可得单独出现的a、b
+    let singleNumber = (nums) => {
+        let sign = 0;
+        //取得数组中两个唯一数的按位异或结果
+        for (let i = 0; i < nums.length; i++)
+        {
+            sign ^= nums[i];
+        }
+        //console.log(sign,sign.toString(2))
+        //获取区分两个唯一数的比特位所代表的值
+        //也可以写成：sign &= (~sign) + 1
+        sign &= -sign;
+        //console.log(sign,sign.toString(2))
+        let n1 = 0,n2 = 0;
+        //通过标识，区分两个数组
+        for (let i = 0; i < nums.length; i++)
+        {
+            if ((nums[i] & sign) == sign){
+                //console.log(1,nums[i] & sign)
+                n1 ^= nums[i];
+                //console.log(12,n1)
+            }
+            else{
+                //console.log(2,nums[i] & sign)
+                n2 ^= nums[i];
+                //console.log(22,n2)
+            }
+        }
+        return [n1,n2];
+    };
+    let nums = [1,2,1,3,2,5];
+    console.log(singleNumber(nums))
     ```
