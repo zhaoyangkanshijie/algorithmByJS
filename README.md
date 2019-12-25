@@ -682,7 +682,14 @@ void DFS(int v)
 ```
 
 3. 复杂度
-时间：O(n^2)
+
+    时间：O(n^2)
+
+4. 样例
+
+    * [连通块](#连通块)
+    * [子集问题](#子集问题)
+    * [拓扑排序](#拓扑排序)
 
 ### 广度优先搜索
 1. 思想
@@ -744,7 +751,14 @@ void BFS(Graph G, void (*visit)(int v))
 来源：[dashuai](https://www.cnblogs.com/kubixuesheng/p/4399705.html)
 
 3. 复杂度
-时间：O(n^2)
+
+    时间：O(n^2)
+
+4. 样例
+
+    * [连通块](#连通块)
+    * [子集问题](#子集问题)
+    * [拓扑排序](#拓扑排序)
 
 ### 最小生成树算法prim
 1. 思想
@@ -946,6 +960,126 @@ int main()
 }
 ```
 来源：[mgsky1](https://blog.csdn.net/mgsky1/article/details/77840286)
+
+### 连通块
+1. 思想
+
+    可通过bfs，dfs，并查集计算连通块数量
+
+2. 样例
+
+    来源：[力扣（LeetCode）](https://leetcode-cn.com)
+
+    朋友圈
+    ```txt
+    班上有 N 名学生。其中有些人是朋友，有些则不是。他们的友谊具有是传递性。如果已知 A 是 B 的朋友，B 是 C 的朋友，那么我们可以认为 A 也是 C 的朋友。所谓的朋友圈，是指所有朋友的集合。
+    给定一个 N * N 的矩阵 M，表示班级中学生之间的朋友关系。如果M[i][j] = 1，表示已知第 i 个和 j 个学生互为朋友关系，否则为不知道。你必须输出所有学生中的已知的朋友圈总数。
+
+    输入: 
+    [[1,1,0],
+    [1,1,0],
+    [0,0,1]]
+    输出: 2 
+    说明：已知学生0和学生1互为朋友，他们在一个朋友圈。
+    第2个学生自己在一个朋友圈。所以返回2。
+    ```
+
+    bfs
+    ```js
+    let findCircleNum = (M) => {//bfs
+        let count = 0;
+        let visited = new Array(M.length).fill(0);
+        let queue = [];
+        for(let i = 0;i < M.length;i++){
+            if(visited[i] == 0){
+                queue.push(i);
+                visited[i] = 1;
+            }
+            else{
+                continue;
+            }
+            while(queue.length > 0){
+                let current = queue.shift();
+                for(let j = 0;j < M[current].length;j++){
+                    if(j != current && M[current][j] == 1 && visited[j] == 0){
+                        queue.push(j);
+                        visited[j] = 1;
+                    }
+                }
+            }
+            count++;
+        }
+        return count;
+    };
+    let M = [
+        [1,1,0,0,0,0],
+        [1,1,0,0,0,0],
+        [0,0,1,1,1,0],
+        [0,0,1,1,0,0],
+        [0,0,1,0,1,0],
+        [0,0,0,0,0,1]
+    ];
+    console.log(findCircleNum(M));
+    ```
+
+    dfs
+    ```js
+    let findCircleNum = (M) => {//dfs
+        let count = 0;
+        let visited = new Array(M.length).fill(0);
+        for(let i = 0;i < M.length;i++){
+            if(visited[i] == 0){
+                visited[i] = 1;
+                dfs(i,visited,M);
+                count++;
+            }
+        }
+        return count;
+    };
+    let dfs = (i,visited,M) => {
+        for(let j = 0;j < M[i].length;j++){
+            if(i != j && M[i][j] == 1 && visited[j] == 0){
+                visited[j] = 1;
+                dfs(j,visited,M);
+            }
+        }
+    }
+    ```
+
+    并查集(时间复杂度O(n^3))
+    ```js
+    let findCircleNum = (M) => {//并查集
+        let count = 0;
+        let parent = new Array(M.length).fill(-1);
+
+        for (let i = 0; i < M.length;i++) {
+            for (let j = 0; j < M.length;j++) {
+                if (i != j && M[i][j] == 1) {
+                    union(parent, i, j);
+                }
+            }
+        }
+        //console.log(parent)
+        for (let i = 0; i < parent.length;i++) {
+            if (parent[i] == -1) count++;
+        }
+        
+        return count;
+    };
+    let find = (parent, i) => {
+        //寻找根节点
+        if (parent[i] == -1) return i;
+        return find(parent, parent[i]);
+    }
+    let union = (parent, x, y) => {
+        //x,y连通，则设置parent[y] = x，表示y的父节点为x
+        let xset = find(parent, x);
+        let yset = find(parent, y);
+        if (xset != yset)
+            parent[yset] = xset;
+    }
+    ```
+
 
 ### KMP算法
 1. 思想
