@@ -1501,6 +1501,61 @@ $(function () {
 
         [最短路径算法](#最短路径算法dijkstra)
 
+    * 最大为 N 的数字组合(数位dp)
+
+        ```txt
+        我们有一组排序的数字 D，它是  {'1','2','3','4','5','6','7','8','9'} 的非空子集。（请注意，'0' 不包括在内。）
+        现在，我们用这些数字进行组合写数字，想用多少次就用多少次。例如 D = {'1','3','5'}，我们可以写出像 '13', '551', '1351315' 这样的数字。
+        返回可以用 D 中的数字写出的小于或等于 N 的正整数的数目。
+        输入：D = ["1","3","5","7"], N = 100
+
+        输出：20
+        解释：
+        可写出的 20 个数字是：
+        1, 3, 5, 7, 11, 13, 15, 17, 31, 33, 35, 37, 51, 53, 55, 57, 71, 73, 75, 77
+        ```
+
+        ```js
+        let atMostNGivenDigitSet = (D, N) => {
+            //数位digit比N的数位小，则含有digit数位的数有pow(D.length,digit)个
+            //数位digit与N相等时，
+            //1.第一个数位比N小的D数有d个，数有d*pow(D.length,digit-1)个
+            //2.第一个数位与N相等，则累加比较后面的位数，数有+=d[i]*pow(D.length,digit-1)个
+            let stringLen = N.toString().length;
+            let dp = new Array(stringLen+1).fill(0);
+            dp[stringLen] = 1;//N的len - i 位数的合法数个数，表示完全与N相等的数有1个
+
+            //统计数位与N相等的情况
+            for(let i = stringLen-1;i >= 0;i--){
+                let Ni = N.toString()[i];
+                for(let d of D){
+                    if(parseInt(d) < Ni){
+                        //console.log('less',parseInt(d),Ni,stringLen-i-1,dp)
+                        //D中小于N中前digit位数，累加Math.pow(D.length, digit-1)
+                        dp[i] += Math.pow(D.length, stringLen-i-1);
+                        //console.log('less2',dp)
+
+                    }
+                    else if(parseInt(d) == Ni){
+                        //console.log('equal',parseInt(d),Ni,dp)
+                        //数位相等，则加上上一次统计(数位更短)的合法数
+                        dp[i] += dp[i+1];
+                        //console.log('equal2',dp)
+                    }
+                }
+            }
+
+            //统计数位小于N的情况
+            for(let i = 1;i < stringLen;i++){
+                //数位digit比N的数位小，则含有digit数位的数有pow(D.length,digit)个,把这些数加进来
+                dp[0] += Math.pow(D.length, i);
+            }
+            return dp[0];
+        };
+        let D = ["3","4","5","6"], N = 64;
+        console.log(atMostNGivenDigitSet(D,N));
+        ```
+
 ### 滑动窗口
 * 算法识别与思想
 
