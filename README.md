@@ -1830,10 +1830,12 @@ let head = new ListNode(1);
         const len = nums.length;
         if(nums == null || len < 3) return ans;
         nums.sort((a, b) => a - b); // 排序O(nlog2n)
+        if(nums[0]+nums[1]+nums[2]>target) return ans;
+        if(nums[len-1]+nums[len-2]+nums[len-3]<target) return ans;
         for (let i = 0; i < len - 2 ; i++) {//O(n2)
             if(i > 0 && nums[i] == nums[i-1]) continue; // 去重
-            if(nums[i]+nums[i+1]+nums[i+2] > target) continue;//和尽可能小的数相加，过大则不适合
-            if(nums[i]+nums[len-1]+nums[len-2] < target) continue;//和尽可能大的数相加，过小则不适合
+            if(nums[i]+nums[i+1]+nums[i+2] > target) break;//和尽可能小的数相加，过大则不适合
+            //if(nums[i]+nums[len-1]+nums[len-2] < target) continue;//和尽可能大的数相加，过小则不适合
             let L = i+1;//下一个数
             let R = len-1;//最后一个数
             while(L < R){
