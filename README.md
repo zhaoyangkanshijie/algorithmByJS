@@ -3165,3 +3165,243 @@ $(()=>{
     let nums = [1,2,1,3,2,5];
     console.log(singleNumber(nums))
     ```
+
+## 常见例题
+
+### 最长公共前缀
+
+* 来源：[视频面试超高频在线编程题，搞懂这些足以应对大部分公司](https://mp.weixin.qq.com/s/zdC6dwpLfiYaNeWY4-h9dg)
+
+* 方法1
+
+    从前往后比较所有字符串公共部分，时间复杂度：O(s)，s 是所有字符串中字符数量的总和，空间复杂度：O(1)
+
+    ```js
+    var longestCommonPrefix = function(strs) {
+        if (strs === null || strs.length === 0) return "";
+        let prevs = strs[0]
+        for(let i = 1; i < strs.length; i++) {
+            let j = 0
+            for(; j < prevs.length && j < strs[i].length; j++) {
+                if(prevs.charAt(j) !== strs[i].charAt(j)) break
+            }
+            prevs = prevs.substring(0, j)
+            if(prevs === "") return ""
+        }
+        return prevs
+    };
+    ```
+
+* 方法2
+
+    仅需最大、最小字符串的最长公共前缀,时间复杂度：O(n+m)，n是数组的长度，m是字符串数组中最短字符的长度,空间复杂度：O(1)
+
+    ```js
+    var longestCommonPrefix = function(strs) {
+        if (strs === null || strs.length === 0) return "";
+        if(strs.length === 1) return strs[0]
+        let min = 0, max = 0
+        for(let i = 1; i < strs.length; i++) {
+            if(strs[min] > strs[i]) min = i
+            if(strs[max] < strs[i]) max = i
+        }
+        for(let j = 0; j < strs[min].length; j++) {
+            if(strs[min].charAt(j) !== strs[max].charAt(j)) {
+                return strs[min].substring(0, j)
+            }
+        }
+        return strs[min]
+    };
+    ```
+
+* 方法3
+
+    两两分治归并，时间复杂度：O(s)，s 是所有字符串中字符数量的总和，空间复杂度：O(m*logn)，n是数组的长度，m为字符串数组中最长字符的长度
+
+    ```js
+    var longestCommonPrefix = function(strs) {
+        if (strs === null || strs.length === 0) return "";
+        return lCPrefixRec(strs)
+    };
+
+    // 若分裂后的两个数组长度不为 1，则继续分裂
+    // 直到分裂后的数组长度都为 1，
+    // 然后比较获取最长公共前缀
+    function lCPrefixRec(arr) {
+    let length = arr.length
+    if(length === 1) {
+        return arr[0]
+    }
+    let mid = Math.floor(length / 2),
+        left = arr.slice(0, mid),
+        right = arr.slice(mid, length)
+    return lCPrefixTwo(lCPrefixRec(left), lCPrefixRec(right))
+    }
+
+    // 求 str1 与 str2 的最长公共前缀
+    function lCPrefixTwo(str1, str2) {
+        let j = 0
+        for(; j < str1.length && j < str2.length; j++) {
+            if(str1.charAt(j) !== str2.charAt(j)) {
+                break
+            }
+        }
+        return str1.substring(0, j)
+    }
+    ```
+
+* 方法4
+
+    Trie 树（字典树），时间复杂度：O(s+m)，s 是所有字符串中字符数量的总和，m为字符串数组中最长字符的长度，构建 Trie 树需要 O(s) ，最长公共前缀查询操作的复杂度为 O(m)，空间复杂度：O(s)，用于构建 Trie 树
+
+    ```js
+    var longestCommonPrefix = function(strs) {
+        if (strs === null || strs.length === 0) return "";
+        // 初始化 Trie 树
+        let trie = new Trie()
+        // 构建 Trie 树
+        for(let i = 0; i < strs.length; i++) {
+            if(!trie.insert(strs[i])) return ""
+        }
+        // 返回最长公共前缀
+        return trie.searchLongestPrefix()
+    };
+    // Trie 树
+    var Trie = function() {
+        this.root = new TrieNode()
+    };
+    var TrieNode = function() {
+        // next 放入当前节点的子节点
+        this.next = {};
+        // 当前是否是结束节点
+        this.isEnd = false;
+    };
+    Trie.prototype.insert = function(word) {
+        if (!word) return false
+        let node = this.root
+        for (let i = 0; i < word.length; i++) {
+            if (!node.next[word[i]]) {
+                node.next[word[i]] = new TrieNode()
+            }
+            node = node.next[word[i]]
+        }
+        node.isEnd = true
+        return true
+    };
+    Trie.prototype.searchLongestPrefix = function() {
+        let node = this.root
+        let prevs = ''
+        while(node.next) {
+            let keys = Object.keys(node.next)
+            if(keys.length !== 1) break
+            if(node.next[keys[0]].isEnd) {
+                prevs += keys[0]
+                break
+            }
+            prevs += keys[0]
+            node = node.next[keys[0]]
+        }
+        return prevs
+    }
+    ```
+
+### 翻转字符串里的单词
+
+* 来源：[视频面试超高频在线编程题，搞懂这些足以应对大部分公司](https://mp.weixin.qq.com/s/zdC6dwpLfiYaNeWY4-h9dg)
+
+* 方法1
+
+    正则 + JS API
+
+    ```js
+    var reverseWords = function(s) {
+        return s.trim().replace(/\s+/g, ' ').split(' ').reverse().join(' ')
+    };
+    ```
+
+* 方法2
+
+    双端队列
+
+    ```js
+    var reverseWords = function(s) {
+        let left = 0
+        let right = s.length - 1
+        let queue = []
+        let word = ''
+        while (s.charAt(left) === ' ') left ++
+        while (s.charAt(right) === ' ') right --
+        while (left <= right) {
+            let char = s.charAt(left)
+            if (char === ' ' && word) {
+                queue.unshift(word)
+                word = ''
+            } else if (char !== ' '){
+                word += char
+            }
+            left++
+        }
+        queue.unshift(word)
+        return queue.join(' ')
+    };
+    ```
+
+### 反转链表
+
+* 来源：[视频面试超高频在线编程题，搞懂这些足以应对大部分公司](https://mp.weixin.qq.com/s/zdC6dwpLfiYaNeWY4-h9dg)
+
+* 方法1
+
+    前驱节点迭代法,时间复杂度：O(n),空间复杂度：O(1)
+    ```js
+    var reverseList = function(head) {
+        if(!head || !head.next) return head
+        var prev = null, curr = head
+        while(curr) {
+            // 用于临时存储 curr 后继节点
+            var next = curr.next
+            // 反转 curr 的后继指针
+            curr.next = prev
+            // 变更prev、curr 
+            // 待反转节点指向下一个节点 
+            prev = curr
+            curr = next
+        }
+        head = prev
+        return head
+    };
+    ```
+
+* 方法2
+
+    尾递归法,时间复杂度：O(n),空间复杂度：O(n)
+    ```js
+    var reverseList = function(head) {
+        if(!head || !head.next) return head
+        head = reverse(null, head)
+        return head
+    };
+
+    var reverse = function(prev, curr) {
+        if(!curr) return prev
+        var next = curr.next
+        curr.next = prev
+        return reverse(curr, next)
+    };
+    ```
+
+* 方法3
+
+    递归法,时间复杂度：O(n),空间复杂度：O(n)
+    ```js
+    var reverseList = function(head) {
+        if(!head || !head.next) return head
+        var next = head.next
+        // 递归反转
+        var reverseHead = reverseList(next)
+        // 变更指针
+        next.next = head
+        head.next = null
+        return reverseHead
+    };
+    ```
