@@ -3279,73 +3279,79 @@ $(() => {
 
   有限的背包容量，装入最大的物品价值总和，动态规划/回溯
 
-- 来源：[力扣（LeetCode）](https://leetcode-cn.com)
+- 情景描述(图解：来源 2)
 
-  - 子集相等
+  背包容量 C，有 n 件物品，每件价值为 n[i].p，占有容量 n[i].c，求背包能装入的最大价值 P
 
-  ```txt
-  给定一个只包含正整数的非空数组。是否可以将这个数组分割成两个子集，使得两个子集的元素和相等。
+  列表辅助理解：每一行 n[i]表示各物品，每一列 1-C 表示所有子背包容量的数值，每一格 cell[行][列]=max(上一个单元格的值(cell[行-1][列]),当前商品价值+剩余价值(cell[行-1]列-n[i].c]))
 
-  每个数组中的元素不会超过 100
-  数组的大小不会超过 200
+* 来源：[力扣（LeetCode）](https://leetcode-cn.com)、[0-1 背包问题](https://www.jianshu.com/p/a66d5ce49df5)
 
-  输入: [1, 5, 11, 5]
-  输出: true
-  解释: 数组可以分割成 [1, 5, 5] 和 [11]
-  ```
+- 子集相等
 
-  动态规划/回溯
+```txt
+给定一个只包含正整数的非空数组。是否可以将这个数组分割成两个子集，使得两个子集的元素和相等。
 
-  ```js
-  let canPartition = (nums) => {
-    let sum = nums.reduce(function (prev, curr, idx, arr) {
-      return prev + curr;
-    });
-    if (sum % 2 == 1) {
-      return false;
-    } else {
-      let dividedSum = sum / 2;
-      //return dp(nums,dividedSum);
-      return traceback(
-        nums.sort((a, b) => b - a),
-        dividedSum,
-        0
-      );
-    }
-  };
+每个数组中的元素不会超过 100
+数组的大小不会超过 200
 
-  let traceback = (nums, sum, index) => {
-    if (index >= nums.length || nums[index] > sum) {
-      return false;
-    }
+输入: [1, 5, 11, 5]
+输出: true
+解释: 数组可以分割成 [1, 5, 5] 和 [11]
+```
 
-    if (nums[index] == sum) {
-      return true;
-    }
-    //分是否选择第index个数字入背包2种情况
-    return (
-      traceback(nums, sum - nums[index], index + 1) ||
-      traceback(nums, sum, index + 1)
+动态规划/回溯
+
+```js
+let canPartition = (nums) => {
+  let sum = nums.reduce(function (prev, curr, idx, arr) {
+    return prev + curr;
+  });
+  if (sum % 2 == 1) {
+    return false;
+  } else {
+    let dividedSum = sum / 2;
+    //return dp(nums,dividedSum);
+    return traceback(
+      nums.sort((a, b) => b - a),
+      dividedSum,
+      0
     );
-  };
+  }
+};
 
-  let dp = (nums, sum) => {
-    let arr = new Array(sum + 1).fill(false);
-    arr[0] = true;
-    for (let i = 0; i < nums.length; i++) {
-      for (let j = sum; j >= nums[i]; j--) {
-        if (arr[j - nums[i]]) {
-          arr[j] = true;
-        }
+let traceback = (nums, sum, index) => {
+  if (index >= nums.length || nums[index] > sum) {
+    return false;
+  }
+
+  if (nums[index] == sum) {
+    return true;
+  }
+  //分是否选择第index个数字入背包2种情况
+  return (
+    traceback(nums, sum - nums[index], index + 1) ||
+    traceback(nums, sum, index + 1)
+  );
+};
+
+let dp = (nums, sum) => {
+  let arr = new Array(sum + 1).fill(false);
+  arr[0] = true;
+  for (let i = 0; i < nums.length; i++) {
+    for (let j = sum; j >= nums[i]; j--) {
+      if (arr[j - nums[i]]) {
+        arr[j] = true;
       }
     }
-    //console.log(arr)
-    return arr[sum];
-  };
+  }
+  //console.log(arr)
+  return arr[sum];
+};
 
-  let nums = [2, 2, 3, 5];
-  console.log(canPartition(nums));
-  ```
+let nums = [2, 2, 3, 5];
+console.log(canPartition(nums));
+```
 
 ### 拓扑排序
 
@@ -3935,3 +3941,36 @@ $(() => {
    };
    console.log(getAllSame(arr));
    ```
+
+### 打家劫舍
+
+- 来源：[前端算法渣的救赎之路](https://juejin.im/post/5ed32e0151882542fd351696)
+
+- 题目
+
+  ```txt
+  你是一个专业的小偷，计划偷窃沿街的房屋。每间房内都藏有一定的现金，影响你偷窃的唯一制约因素就是相邻的房屋装有相互连通的防盗系统，如果两间相邻的房屋在同一晚上被小偷闯入，系统会自动报警。
+  给定一个代表每个房屋存放金额的非负整数数组，计算你在不触动警报装置的情况下，能够偷窃到的最高金额
+  ```
+
+- 思路
+
+  - 先从最简单的情况想起：1 号房间可盗窃最大值为 3 即为 dp[1]=3，2 号房间可盗窃最大值为 4 即为 dp[2]=4，3 号房间自身的值为 2 即为 num=2，那么 dp[3] = MAX(dp[2], dp[1] + num) = MAX(4, 3+2) = 5，3 号房间可盗窃最大值为 5
+  - 考虑复杂的情况：由于不可以在相邻的房屋闯入，所以在当前位置 n 房屋可盗窃的最大值，要么就是 n-1 房屋可盗窃的最大值，要么就是 n-2 房屋可盗窃的最大值加上当前房屋的值，二者之间取最大值
+  - 总结得出规律：动态规划方程：dp[n] = num + Max(dp[n-1])
+
+- 实现
+
+  ```js
+  var rob = function(nums) {
+      if(nums.length === 0) return 0;
+      if(nums.length === 1) return nums[0];
+      if(nums.length === 2) return Math.max(nums[0],nums[1]);
+      if(nums.length === 3) return Math.max(nums[0] + nums[2],nums[1]);
+      let dp = [nums[0],nums[1],Math.max(nums[0] + nums[2],nums[1])];
+      for(let i = 3;i < nums.length;i++){
+          dp[i] = Math.max(dp[i-1],dp[i-2]+nums[i]);
+      }
+      return Math.max(dp[nums.length-1],dp[nums.length-2]);
+  };
+  ```
