@@ -3974,3 +3974,182 @@ console.log(canPartition(nums));
       return Math.max(dp[nums.length-1],dp[nums.length-2]);
   };
   ```
+
+### 岛屿数量
+
+- 来源：[letcode](https://leetcode-cn.com/problems/number-of-islands/)
+
+- 题目
+
+  ```txt
+  给你一个由 '1'（陆地）和 '0'（水）组成的的二维网格，请你计算网格中岛屿的数量。
+  岛屿总是被水包围，并且每座岛屿只能由水平方向或竖直方向上相邻的陆地连接形成。
+  此外，你可以假设该网格的四条边均被水包围。
+  输入:
+  [
+  ['1','1','1','1','0'],
+  ['1','1','0','1','0'],
+  ['1','1','0','0','0'],
+  ['0','0','0','0','0']
+  ]
+  输出: 1
+
+  输入:
+  [
+  ['1','1','0','0','0'],
+  ['1','1','0','0','0'],
+  ['0','0','1','0','0'],
+  ['0','0','0','1','1']
+  ]
+  输出: 3
+  解释: 每座岛屿只能由水平和/或竖直方向上相邻的陆地连接而成。
+  ```
+
+- 思路
+
+  标记访问过的节点为0，剩下的就是寻路的算法不同，访问完毕后寻找还没访问过且为1的地方。
+
+  dfs：四方检查，直到区域访问完毕
+
+  bfs：队列不断添加四方可添加元素，直到区域访问完毕(队列为空)
+
+  union：数组顺序遍历，看元素有多少个共同的根
+
+- 实现
+
+  1. dfs
+  ```js
+  /**
+  * @param {character[][]} grid
+  * @return {number}
+  */
+  let dfs = function (grid, i, j){
+    // 把当前项变为0, 防止重新查找
+    grid[i][j] = 0     
+    // 当前项 上下左右检查
+    if(grid[i - 1] && grid[i - 1][j] == 1) dfs(grid, i - 1, j)  // 上
+    if(grid[i + 1] && grid[i + 1][j] == 1) dfs(grid, i + 1, j)  // 下
+    if(grid[i][j - 1] && grid[i][j - 1] == 1) dfs(grid, i, j - 1)  // 左
+    if(grid[i][j + 1] && grid[i][j + 1] == 1) dfs(grid, i, j + 1)  // 右
+  }
+  var numIslands = function(grid) {
+    if(grid.length < 1) return 0 
+    let islands = 0
+    for(let i = 0; i < grid.length; i++){
+      for(let j = 0; j < grid[0].length; j++){
+        if(grid[i][j] == 1){
+          islands++             // 岛屿加1
+          dfs(grid, i, j)       // 寻找与当前项相邻的 1 并把它们变成0
+        }
+      }
+    }
+    return islands
+  };
+  ```
+  ```js
+  var numIslands = function(grid) {
+    const row = grid.length;
+    if(!row) return 0;
+    const col = grid[0].length;
+    let res = 0;
+    for(let i = 0; i < row; i++) {
+      for(let j = 0; j < col; j++) {
+        if(grid[i][j] === '1') {
+          res++;
+          dfs(grid, i, j);
+        }
+      }
+    }
+    function dfs(grid, i, j) {
+      if(i < 0 || i >= row || j < 0 || j >= col) return;
+      if(grid[i][j] === '1') {
+        grid[i][j] = '0';
+        dfs(grid, i - 1, j);
+        dfs(grid, i + 1, j);
+        dfs(grid, i, j - 1);
+        dfs(grid, i, j + 1);
+      }
+    }
+    return res;
+  };
+  ```
+
+  2. bfs
+  ```js
+  var numIslands = function(grid) {
+    if(grid.length < 1) return 0
+    let m = grid.length
+    let n = grid[0].length
+    let islands = 0
+    for(let i = 0; i < m; i++){
+      for(let j = 0; j < n; j++){
+        if(grid[i][j] == 1){
+          islands++
+          grid[i][j] = 0            // 把查找过的项变成0 防止重新查找
+          let queue = []
+          queue.push([i, j])        // 把当前点加入队列
+          while(queue.length > 0){  // 当队列不为空时, 继续循环
+            let cur = queue.shift()  // 拿出队列第一项
+            let x = cur[0], y = cur[1]
+            // 上下左右检查
+            if(x - 1 >= 0 && grid[x-1][y] == 1){  // 上
+              queue.push([x - 1, y])
+              grid[x - 1][y] = 0
+            }
+            if(x + 1 < m && grid[x + 1][y] == 1){  // 下
+              queue.push([x + 1, y])
+              grid[x + 1][y] = 0
+            }
+            if(y - 1 >= 0 && grid[x][y - 1] == 1){  // 左
+              queue.push([x, y - 1])
+              grid[x][y - 1] = 0
+            }
+            if(y + 1 < n && grid[x][y + 1] == 1){  // 右
+              queue.push([x, y + 1])
+              grid[x][y + 1] = 0
+            }
+          }
+        }
+      }
+    }
+    return islands
+  };
+  ```
+
+  3. 并查集
+  ```js
+  var numIslands = function(grid) {
+      let row = grid.length;
+      if(row === 0) return 0;
+      let col = grid[0].length;
+      let parents = [];
+      for(let i = 0;i < row;i++){
+          for(let j = 0;j < col;j++){
+              parents[i*col+j] = i * col + j;
+          }
+      }
+      function find(root){
+          if(root !== parents[root]) parents[root] = find(parents[root]);
+          return parents[root];
+      }
+
+      function union(x,y){
+          x = find(x);
+          y = find(y);
+          if(x !== y){
+              parents[x] = y;
+          }
+      } 
+      for(let i = 0;i < row;i++){
+          for(let j = 0;j < col;j++){
+              if(grid[i][j] === '1'){
+                  i < row-1 && grid[i+1][j] === '1' && union((i+1)*col+j,i*col+j);
+                  j < col-1 && grid[i][j+1] === '1' && union(i*col+j+1,i*col+j);
+              }else{
+                  parents[i*col+j] = -parents[i*col+j];
+              }
+          }
+      }
+      return parents.filter((value,key) => (key === value && Object.is(key,value))).length;
+  };
+  ```
