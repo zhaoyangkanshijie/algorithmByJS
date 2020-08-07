@@ -4153,3 +4153,190 @@ console.log(canPartition(nums));
       return parents.filter((value,key) => (key === value && Object.is(key,value))).length;
   };
   ```
+
+### 接雨水
+
+- 来源：[letcode](https://leetcode-cn.com/problems/number-of-islands/)
+
+- 题目
+
+  ```txt
+  给定 n 个非负整数表示每个宽度为 1 的柱子的高度图，计算按此排列的柱子，下雨之后能接多少雨水。
+  数组 [0,1,0,2,1,0,1,3,2,1,2,1] 表示的高度图，在这种情况下，可以接 6 个单位的雨水
+  ```
+
+- 思路
+
+  1. 找规律
+
+    当前柱子存水量 = 最近最高柱子高度（只看左边到当前柱子）- 当前柱子高度
+
+  2. 双指针
+
+    先去除高度为0的两侧位置，指针位于左右两端，选较低的一端开始，每出现比它更低的，雨水量叠加，直到有比它高的出现，更新此端指针高度，循环此过程直到双指针相遇
+
+- 实现
+
+  1. 找规律
+  ```js
+  function trap(arr){
+      if(!arr.length) return 0;
+      let left = 0,right = arr.length-1,leftHeight = 0,rightHeight = 0,res = 0;
+      while(left < right){
+          if(arr[left] < arr[right]){
+              leftHeight = Math.max(arr[left],leftHeight);
+              res += leftHeight - arr[left];
+              left++;
+          }else{
+              rightHeight = Math.max(arr[right],rightHeight);
+              res += rightHeight - arr[right];
+              right--;
+          }
+      }
+      return res;
+  }
+  ```
+
+  2. 双指针
+  ```js
+  function trap(height)
+  {
+      let left = 0, right = height.length - 1;
+      let ans = 0;
+      let left_max = 0, right_max = 0;
+      while (left < right) {
+          if (height[left] < height[right]) {
+              height[left] >= left_max ? (left_max = height[left]) : ans += (left_max - height[left]);
+              ++left;
+          }
+          else {
+              height[right] >= right_max ? (right_max = height[right]) : ans += (right_max - height[right]);
+              --right;
+          }
+      }
+      return ans;
+  }
+  ```
+
+- 题目
+
+  ```txt
+  给你一个 m x n 的矩阵，其中的值均为非负整数，代表二维高度图每个单元的高度，请计算图中形状最多能接多少体积的雨水。
+  给出如下 3x6 的高度图:
+  [
+    [1,4,3,1,3,2],
+    [3,2,1,3,2,4],
+    [2,3,3,2,3,1]
+  ]
+  返回 4 。
+  ```
+
+- 思路
+
+  先建立理想矩阵，使矩阵最外圈相同，内层用当前碰到的最大值填充，使理想矩阵的地形没有凹陷，但这并不是地势最低的没凹陷地形，因此接下来需要修正
+  
+  通过while不断修正内圈理想矩阵，修正方法为遍历内圈每个点：
+  1. 理想高度和现实高度相同，则继续
+  2. 高度不等，则进行四周比较：理想当前点比理想上点高，则取现实当前点与理想上点较高的替换理想当前点，依次对比剩下3周
+    
+      每一轮达到效果：四周理想点的最低点与现实当前点取较高点来替换当前理想点，实质上就是降低理想高度，达到这一点四周地形刚好没有凹陷的情况
+
+  while结束条件为：理想矩阵不再变化(每次替换当前理想点均视为变化)
+
+  最后，没凹陷的理想矩阵减去现实矩阵，即为可接雨水量
+
+- 实现
+
+  ```js
+  var trapRainWater = function (heightMap) {
+    if (heightMap.length < 3) {
+      return 0;
+    }
+    else if (heightMap[0].length < 3) {
+      return 0;
+    }
+    var max_height = 0;
+    var newArr = new Array();
+    for (var i = 0; i < heightMap.length; i++) {
+      newArr[i] = new Array();
+      for (var j = 0; j < heightMap[i].length; j++) {
+        newArr[i][j] = heightMap[i][j];
+        //找出最大值
+        if (heightMap[i][j] > max_height) {
+          max_height = heightMap[i][j];
+        }
+        if (i > 0 && j > 0 && i < heightMap.length - 1 && j < heightMap[i].length - 1) {
+          if (max_height > heightMap[i][j]) {
+            newArr[i][j] = max_height;
+          }
+        }
+      }
+    }
+    
+    var num_temp = 1;
+    var count = 0;
+    while (num_temp != 0) {
+      num_temp = 0;
+      for (var i = 1; i < newArr.length - 1; i++) {
+        for (var j = 1; j < newArr[i].length - 1; j++) {
+          count++;
+          var height = newArr[i][j];
+          var height1 = heightMap[i][j];
+          if (height == height1) {
+            continue;
+          }
+          var up = newArr[i - 1][j];
+          var down = newArr[i + 1][j];
+          var left = newArr[i][j - 1];
+          var right = newArr[i][j + 1];
+          if (height > up) {
+            if (up < heightMap[i][j]) {
+              height = heightMap[i][j];
+            }
+            else {
+              height = up;
+            }
+            num_temp++;
+          }
+          if (height > down) {
+            if (down < heightMap[i][j]) {
+              height = heightMap[i][j];
+            }
+            else {
+              height = down;
+            }
+            num_temp++;
+          }
+          if (height > left) {
+            if (left < heightMap[i][j]) {
+              height = heightMap[i][j];
+            }
+            else {
+              height = left;
+            }
+            num_temp++;
+          }
+          if (height > right) {
+            if (right < heightMap[i][j]) {
+              height = heightMap[i][j];
+            }
+            else {
+              height = right;
+            }
+            num_temp++;
+          }
+          newArr[i][j] = height;
+        }
+      }
+    }
+    
+    var num=0;
+    for(var i=0;i<heightMap.length;i++){
+        for(var j=0;j<heightMap[i].length;j++){
+            num += newArr[i][j]-heightMap[i][j];
+        }
+    }
+    console.log(num);
+    return num;
+  };
+  ```
