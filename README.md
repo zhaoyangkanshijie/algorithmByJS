@@ -1166,6 +1166,8 @@ int main()
 
 ### KMP 算法
 
+参考:[图解kmp算法-通俗易懂kmp算法](https://www.jianshu.com/p/dcfa55a773f0)
+
 1. 思想
 
 - 朴素算法
