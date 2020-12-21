@@ -4409,6 +4409,58 @@ console.log(canPartition(nums));
   };
   ```
 
+### 盛最多水的容器
+
+- 来源：[letcode](https://leetcode-cn.com/problems/container-with-most-water/)
+
+- 题目
+
+  ```txt
+  给你 n 个非负整数 a1，a2，...，an，每个数代表坐标中的一个点 (i, ai) 。在坐标内画 n 条垂直线，垂直线 i 的两个端点分别为 (i, ai) 和 (i, 0) 。找出其中的两条线，使得它们与 x 轴共同构成的容器可以容纳最多的水。
+  ```
+
+- 思路
+
+  1. 双指针
+
+    关键需要比较长度优先还是高度优先的情况
+
+    双指针逐步收窄长度，此时盛水量为：长度x较低处的高度，记录下来，哪边短就哪边往前移，不断对比，找出最大值
+
+- 实现
+
+  ```js
+  var heights = [2,3,4,5,18,17,6];
+  var maxArea = function(height) {
+    if(!height.length) return 0;
+    let left = 0,right = height.length-1,res = 0;
+    while(left < right){
+        if(height[left] <= height[right]){
+            let cur = height[left] * (right - left);
+            console.log(`右边较高:左${height[left]}右${height[right]},当前${cur}，记录${res}`)
+            res = Math.max(res,cur);
+            while(left < right && height[left+1] <= height[left]){
+              left++;
+            }
+            left++;
+            console.log(`左索引${left}，左值${height[left]}，右索引${right}，右值${height[right]}`)
+        }else{
+            let cur = height[right] * (right - left);
+            console.log(`左边较高:左${height[left]}右${height[right]},当前${cur}，记录${res}`)
+            res = Math.max(res,cur);
+            while(left < right && height[right-1] <= height[right]){
+              right--;
+            }
+            right--;
+            console.log(`右索引${right}，右值${height[right]}，左索引${left}，左值${height[left]}`)
+        }
+    }
+    return res;
+  };
+  console.log([2,3,4,5,18,17,6]);
+  console.log(maxArea(heights));//17
+  ```
+
 ### 最少比赛轮选最快的4匹马
 
 - 来源：[腾讯面试题答案：64匹马8个跑道最少需要多少轮才能选出最快的4匹马？](https://blog.csdn.net/qq_44756792/article/details/103851500)
