@@ -1516,21 +1516,17 @@ $(function () {
            }
          }
          //找出整个数组中的最大值
-         //res = Math.max(res,dp[i]);
-         if (res < dp[i]) {
-           res = dp[i];
-           pos.push(nums[i]); //储存序列，用于输出
-         }
+         res = Math.max(res,dp[i]);
        }
-       console.log(nums, dp, pos);
-       //[1, 2, 3, 4, 5, 3, 6, 4, 5]
-       //[1, 3, 6, 7, 9, 10]
-       return res;
+       console.log(dp);
+       //[1, 1, 2, 3, 4, 5, 2, 3, 3, 4, 6, 5, 6, 7, 8, 5, 9, 10, 3]
+       //dp必然出现1~res的连续整数，从后向前找出res,res-1,res-2...所在位置代表的数即可
+       return res;//10
      };
 
      $(() => {
-       let numbers = [1, 3, 6, 7, 9, 4, 10, 5, 6];
-       console.log(lis(numbers)); //6
+       let numbers = [5, 1, 3, 6, 7, 9, 2, 4, 3, 4, 10, 5, 6, 7, 8, 5, 9, 10, 3];
+       console.log(lis(numbers)); //10
      });
      ```
 
@@ -1569,7 +1565,7 @@ $(function () {
          top[left] = poker; // 把这张牌放到牌堆顶
          console.log("poker top", top);
        }
-       return piles; //最后牌堆数即为最长递增子序列长度
+       return piles; //最后牌堆数即为最长递增子序列长度，非空元素即为LIS序列
      };
      ```
 
