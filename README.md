@@ -2087,7 +2087,6 @@ console.log(isPalindrome(head));
   ```
 
 ### 区间合并
-
 - 算法识别与思想
 
   产生没有交集的空间
@@ -4505,3 +4504,211 @@ console.log(canPartition(nums));
   rand5()*5+rand5()舍弃27-30的情况，剩下21个数等分，但概率相等，相加不为1
 
   rand5()*5^k，只要k足够大，舍弃遗漏的概率就越低
+
+
+### 滑动窗口最大值
+
+- 来源：[letcode](https://leetcode-cn.com/problems/sliding-window-maximum/)
+
+- 题目
+
+  ```txt
+  输入: nums = [1,3,-1,-3,5,3,6,7], 和 k = 3
+  输出: [3,3,5,5,6,7]
+  ```
+
+- 思路
+
+  限定空间单调队列
+
+- 实现
+
+  ```js
+  let maxSlidingWindow = (nums, k) => {
+    if (nums == null || nums.length < 2) {
+      return nums;
+    }
+    let left = 0, right = 0;
+    let queue = [];
+    let result = [];
+    for (let i = 0; i < nums.length; i++) {
+      //队列为空，直接加入，队列非空，即将加入的数比队尾的值大，一直移除队尾的数，最后队列加入新来的数
+      while (queue.length > 0 && nums[i] >= queue[queue.length - 1].value) {
+        queue.pop();
+      }
+      queue.push({
+        index: i,
+        value: nums[i]
+      });
+      //通过下标确认最大值是否在有效区间内
+      if (queue[0].index < left) {
+        queue.shift();
+      }
+      if (right - left < k - 1) {
+        right++;
+      } else {
+        //区间成立，加入结果
+        result.push(queue[0].value);
+        left++;
+        right++;
+      }
+    }
+    return result;
+  };
+  window.onload = function () {
+    let nums = [9,7,8,6,4,2,5,3,1],k = 3;
+    console.log(maxSlidingWindow(nums,k));
+    //[9, 8, 8, 6, 5, 5, 5]
+  }
+  ```
+
+### 全排列
+
+- 来源：
+
+[全排列](https://leetcode-cn.com/problems/permutations/)
+
+[全排列2](https://leetcode-cn.com/problems/permutations-ii/submissions/)
+
+- 题目
+
+  ```txt
+  给定一个 没有重复 数字的序列，返回其所有可能的全排列。
+  输入: [1,2,3]
+  输出:
+  [
+    [1,2,3],
+    [1,3,2],
+    [2,1,3],
+    [2,3,1],
+    [3,1,2],
+    [3,2,1]
+  ]
+  ```
+
+- 思路
+
+  广度优先
+
+- 实现
+
+  ```js
+  let permute = (nums) => {
+    let len = nums.length;
+    if (len == 0) {
+      return [];
+    }
+    else if(len == 1){
+      return [[1]];
+    }
+    let queue = [], result = [];
+    for (let i = 0; i < len; i++) {
+      queue.push([nums[i]]);
+    }
+    while (queue.length > 0) {
+      let originItem = queue.shift();
+      for (let j = 0; j < len; j++) {
+        let item = JSON.parse(JSON.stringify(originItem));
+        if (item.indexOf(nums[j]) == -1) {
+          item.push(nums[j]);
+          if (item.length == len) {
+            result.push(item);
+          }
+          else {
+            queue.push(item);
+          }
+        }
+      }
+    }
+    return result;
+  };
+  window.onload = function () {
+    let nums = [1, 2, 3];
+    console.log(permute(nums));
+  }
+  ```
+
+- 题目
+
+  ```txt
+  给定一个可包含重复数字的序列 nums ，按任意顺序 返回所有不重复的全排列。
+  输入：nums = [1,1,2]
+  输出：
+  [[1,1,2],
+  [1,2,1],
+  [2,1,1]]
+  ```
+
+- 思路
+
+  思路1:全排列1+哈希替换
+
+  思路2:全排列1+重复值插值
+
+- 实现
+
+  思路1
+  ```js
+  let getHash = (nums) => {
+    let hash = new Map();
+    let unique = [];
+    let diffNum = 0;
+    for (let i = 0; i < nums.length; i++) {
+      if (unique.indexOf(nums[i]) == -1) {
+        unique.push(nums[i]);
+      }
+      else {
+        hash.set(diffNum.toString(), nums[i]);
+        nums[i] = diffNum.toString();
+        diffNum++;
+      }
+    }
+    return hash;
+  }
+  let permute2 = (nums) => {
+    let len = nums.length;
+    if (len == 0) {
+      return [];
+    }
+    else if (len == 1) {
+      return [[1]];
+    }
+    let hash = getHash(nums);
+    let queue = [], result = [];
+    for (let i = 0; i < len; i++) {
+      queue.push([nums[i]]);
+    }
+    while (queue.length > 0) {
+      let originItem = queue.shift();
+      for (let j = 0; j < len; j++) {
+        let item = JSON.parse(JSON.stringify(originItem));
+        if (item.indexOf(nums[j]) == -1) {
+          item.push(nums[j]);
+          if (item.length == len) {
+            result.push(item);
+          }
+          else {
+            queue.push(item);
+          }
+        }
+      }
+    }
+    let set = new Set();
+    for (let i = 0; i < result.length; i++) {
+      for (let j = 0; j < result[i].length; j++) {
+        if (typeof result[i][j] == 'string') {
+          result[i][j] = hash.get(result[i][j]);
+        }
+      }
+      set.add(JSON.stringify(result[i]));
+    }
+    result = [...set];
+
+    result = result.map(value => value = JSON.parse(value));
+    return result;
+  };
+  window.onload = function () {
+    let nums = [1, 1, 2];
+    console.log(permute2(nums));
+  }
+  ```
