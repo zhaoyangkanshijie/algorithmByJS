@@ -1534,38 +1534,34 @@ $(function () {
 
      ```js
      let lis = (nums) => {
-       let top = new Array(nums.length);
-       let piles = 0; // 牌堆数初始化为 0
-       for (let i = 0; i < nums.length; i++) {
-         let poker = nums[i]; // 要处理的扑克牌
-         //二分查找:决定新来的牌插入哪一个牌堆(插入到刚好比这牌大的牌堆中)
-         //牌堆顶：1 2 3 4 5 6 7 8 -> 新牌：3
-         //1 2 3 4
-         //3 4
-         //4
-         //牌堆顶：1 2 3 3 5 6 7 8 -> 替换
+        //二分查找:决定新来的牌插入哪一个牌堆(插入到刚好比这牌大的牌堆中)
+        //牌堆顶：1 2 3 4 5 6 7 8 -> 新牌：3
+        //1 2 3 4
+        //3 4
+        //4
+        //牌堆顶：1 2 3 3 5 6 7 8 -> 替换
 
-         //牌堆顶：1 2 3 3 5 6 7 8 -> 新牌：9
-         //5 6 7 8
-         //7 8
-         //8
-         //牌堆顶：1 2 3 3 5 6 7 8 9 -> 新建
-         let left = 0,
-           right = piles;
-         while (left < right) {
-           let mid = parseInt((left + right) / 2);
-           if (top[mid] >= poker) {
-             right = mid;
-           } else {
-             left = mid + 1;
-           }
-         }
-         console.log("left:" + left, "piles:" + piles);
-         if (left == piles) piles++; // 没找到合适的牌堆，新建一堆
-         top[left] = poker; // 把这张牌放到牌堆顶
-         console.log("poker top", top);
-       }
-       return piles; //最后牌堆数即为最长递增子序列长度，非空元素即为LIS序列
+        //牌堆顶：1 2 3 3 5 6 7 8 -> 新牌：9
+        //5 6 7 8
+        //7 8
+        //8
+        //牌堆顶：1 2 3 3 5 6 7 8 9 -> 新建
+        let pins = [];
+        for(let i = 0;i < nums.length;i++){
+          let left = 0,right = pins.length,middle = 0;
+          while(left < right){
+            middle = Math.floor((left+right)/2);
+            if(nums[i] <= pins[middle]){
+              right = middle;
+            }
+            else{
+              left = middle+1;
+            }
+          }
+          pins[left] = nums[i];
+          console.log(left,middle,right,nums[i],pins)
+        }
+        return pins.length;
      };
      ```
 
