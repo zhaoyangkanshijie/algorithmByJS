@@ -2083,6 +2083,7 @@ console.log(isPalindrome(head));
   ```
 
 ### 区间合并
+
 - 算法识别与思想
 
   产生没有交集的空间
@@ -4706,5 +4707,90 @@ console.log(canPartition(nums));
   window.onload = function () {
     let nums = [1, 1, 2];
     console.log(permute2(nums));
+  }
+  ```
+
+### 最长回文子串
+
+- 来源：
+
+  [最长回文子串](https://leetcode-cn.com/problems/longest-palindromic-substring/)
+
+- 题目
+
+  ```txt
+  给你一个字符串 s，找到 s 中最长的回文子串。
+  输入：s = "babad"
+  输出："bab"
+  解释："aba" 同样是符合题意的答案。
+  输入：s = "cbbd"
+  输出："bb"
+  输入：s = "a"
+  输出："a"
+  输入：s = "ac"
+  输出："a"
+  ```
+
+- 思路
+
+  1. 动态规划
+
+    * 边界条件：
+
+      * 长度为1，是回文
+      * 长度为2，s[i]=s[j]是回文
+    
+    * 递推关系：
+    
+      长度为3或以上，s[i]=s[j]且l[i+1]~l[j-1]回文，则是回文
+
+    * 优化：
+
+      子串不回文，则停止拓展
+
+  2. Manacher
+
+    * 添加井号分隔符，使回文串变为只有奇数长度的回文串
+    * 每位中心扩散，填表
+
+      ```txt
+      char	#	a	#	b	#	b	#	a	#	b	#	 b	#
+      index	0	1	2	3	4	5	6	7	8	9	10 11	12
+      臂长	 0 1 0 1 4 1 0 5 0 1 2  1  0
+      ```
+
+    * 一边填表一边找出最大值，还原实际回文子串
+
+- 实现
+
+  ```js
+  var longestPalindrome = function (s) {
+    let len = s.length;
+    let dp = new Array(len);
+    for (var i = 0; i < len; i++) {
+      dp[i] = new Array(len);
+    }
+    let ans = "";
+    for (let l = 0; l < len; ++l) {
+      for (let i = 0; i + l < len; ++i) {
+        // 从i~i+l是否回文串，i为起始位置，i+l为结束位置，l+1为回文长度
+        let j = i + l;
+        if (l == 0) {
+          dp[i][j] = true;
+        } else if (l == 1) {
+          dp[i][j] = (s[i] == s[j]);
+        } else {
+          dp[i][j] = (s[i] == s[j] && dp[i + 1][j - 1]);
+        }
+        if (dp[i][j] && l + 1 > ans.length) {
+          ans = s.slice(i, i + l + 1);
+        }
+      }
+    }
+    return ans;
+  };
+  window.onload = function () {
+    let s = "babad";
+    console.log(longestPalindrome(s));
   }
   ```
