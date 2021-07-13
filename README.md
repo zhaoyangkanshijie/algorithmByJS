@@ -4794,3 +4794,190 @@ console.log(canPartition(nums));
     console.log(longestPalindrome(s));
   }
   ```
+
+### 部门树状化
+
+- 来源：
+
+  [面试了十几个高级前端，竟然连（扁平数据结构转Tree）都写不出来](https://juejin.cn/post/6983904373508145189)
+
+- 题目
+
+  ```txt
+  把打平的部门数据树状化
+  输入：
+  let arr = [
+      { id: 1, name: '部门1', pid: 0 },
+      { id: 2, name: '部门2', pid: 1 },
+      { id: 3, name: '部门3', pid: 1 },
+      { id: 4, name: '部门4', pid: 3 },
+      { id: 5, name: '部门5', pid: 4 },
+      { id: 6, name: '部门6', pid: 1 },
+      { id: 7, name: '部门7', pid: 0 },
+      { id: 9, name: '部门9', pid: 8 },
+  ]
+  输出：
+  [
+      {
+          "id": 1,
+          "name": "部门1",
+          "pid": 0,
+          "children": [
+              {
+                  "id": 2,
+                  "name": "部门2",
+                  "pid": 1,
+                  "children": []
+              },
+              {
+                  "id": 3,
+                  "name": "部门3",
+                  "pid": 1,
+                  "children": [
+                      // 结果 ,,,
+                  ]
+              }
+          ]
+      },
+      {
+          "id": 7,
+          "name": "部门7",
+          "pid": 0,
+          "children": []
+      },
+      ...
+  ]
+  ```
+
+- 思路
+
+  难点在于找到每条数据所在层级
+
+  1. 遍历数组+广度队列暴力插入，时间O(n*2^n)，空间O(n)
+  2. 每个层级结构一样，考虑递归操作每个children，时间O(2^n)，空间O(n)
+  3. 根据id建立映射，快速查找条目，时间O(n)，空间O(n)
+
+
+- 实现
+
+  1. 遍历数组+广度队列暴力插入
+  ```js
+  const arrayToTree = (arr) => {
+      let result = [];
+      arr.map((value, index) => {
+          value.children = [];
+          let positionQueue = [...result];
+          let flag = true;
+          while (positionQueue.length !== 0) {
+              let postion = positionQueue.shift();
+              if (value.pid === postion.id) {
+                  postion.children.push(JSON.parse(JSON.stringify(value)));
+                  flag = false;
+                  break;
+              }
+              else {
+                  for (let i = 0; i < postion.children.length; i++) {
+                      positionQueue.push(postion.children[i]);
+                  }
+              }
+          }
+          if (flag) {
+              result.push(JSON.parse(JSON.stringify(value)));
+          }
+      });
+      return result;
+  }
+  ```
+
+  2. 递归操作
+  ```js
+  /**
+    * 递归查找，每次扫描数组中递增的id:0,1,2...，pid相等则放入对应层数的children，继续对下一个id进行操作
+    */
+  const getChildren = (data, result, pid) => {
+      for (const item of data) {
+          if (item.pid === pid) {
+              const newItem = { ...item, children: [] };
+              result.push(newItem);
+              getChildren(data, newItem.children, item.id);
+          }
+      }
+  }
+
+  /**
+  * 转换方法
+  */
+  const arrayToTree2 = (data, pid = 0) => {
+      const result = [];
+      getChildren(data, result, pid);
+      return result;
+  }
+  ```
+
+  3. 先映射再操作
+  ```js
+  function arrayToTree3(arr) {
+      const result = [];   // 存放结果集
+      const itemMap = {};  // map存储
+
+      // 先转成map存储，抽取部门id作为键
+      for (const item of arr) {
+          itemMap[item.id] = { ...item, children: [] }
+      }
+      
+      for (const item of arr) {
+          const treeItem = itemMap[item.id];
+          if (item.pid === 0) {
+              result.push(treeItem);
+          } else {
+              //没有上级部门对应，也不至于报错children不存在
+              if (!itemMap[item.pid]) {
+                  itemMap[item.pid] = {
+                      children: [],
+                  }
+              }
+              itemMap[item.pid].children.push(treeItem)
+          }
+
+      }
+      return result;
+  }
+  ```
+
+  4. 一边映射，一边操作
+  ```js
+  function arrayToTree4(arr) {
+      const result = [];   // 存放结果集
+      const itemMap = {};  // 一边遍历，一边用map储存
+      for (const item of arr) {
+          //没有上级部门对应，也不至于报错children不存在
+          if (!itemMap[item.id]) {
+              itemMap[item.id] = {
+                  children: [],
+              }
+          }
+
+          itemMap[item.id] = {
+              ...item,
+              children: itemMap[item.id]['children']
+          }
+
+          const treeItem = itemMap[item.id];
+
+          if (item.pid === 0) {
+              result.push(treeItem);
+          } else {
+              //没有上级部门对应，也不至于报错children不存在
+              if (!itemMap[item.pid]) {
+                  itemMap[item.pid] = {
+                      children: [],
+                  }
+              }
+              itemMap[item.pid].children.push(treeItem)
+          }
+
+      }
+      return result;
+  }
+  ```
+
