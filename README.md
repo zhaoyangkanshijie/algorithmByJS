@@ -4981,3 +4981,290 @@ console.log(canPartition(nums));
   }
   ```
 
+### 洗牌算法
+
+- 来源：
+
+  [卡牌大师：玩转“洗牌算法”，幸运女神在微笑 (*^_^*)](https://juejin.cn/post/6984925268754317320)
+
+- 题目
+
+  已知：一个数组 nums = [1,2,3,4,5,...,51,52,53,54]，求解：一个乱序的新数组 radomNums。
+
+- 思路
+
+  1. 暴力抽取
+
+    在 1 至 54 之前随机生成一个整数，然后把它放到新数组里，然后再随机生成一个整数，如果和之前生成的没重复，直接放入新数组，如果和之前重复了，那再随机生成一个
+
+    基本上打乱这副扑克牌要洗 200 ~ 300 次！因为越往后，生成随机数重复的概率就越大！
+
+  2. 交换位置
+
+    将牌随机分成两堆，让它们交换，然后再随机分成两堆，再让它们交换，然后再随机分出两堆......这样重复洗十几、二十次后，完成洗牌。
+
+    在现实中，我们玩牌，大部分玩家也是这样去洗的，它也叫【印度洗牌法】
+
+    显然，只要洗的次数不够多，相邻的牌会扎堆出现
+
+  3. 交换位置进阶:第i张与i~len之间的随机数交换位置
+  
+    随机结果【覆盖所有情况】，并且所有随机结果【出现概率相等】
+
+    洗 54 张牌，随机结果需覆盖所有情况就应该是 54 张牌的排列方式，A5454，即 54!（54 的阶层）种随机结果。
+    两两对换：
+    洗 1 次，会得到 n 种可能的结果；
+    洗 2 次，会得到 n*(n-1) 种结果；
+    洗 3 次，会得到 n*(n-1)*(n-2) 种结果；
+    ......
+    洗 n 次之后，我们才满足了：随机结果【覆盖所有情况】，并且所有随机结果【出现概率相等】。
+    所以，必须洗 54 次，才能达到目的。
+
+  4. Fisher-Yates 洗牌算法:1~len-i之间随机数与len-i交换位置
+
+    随机生成 1 至 54 之间的整数，将它和数组的最后一位替换；
+    然后再在 1 至 53 之间随机生成一位整数，将它和数组的倒数第二位替换；
+    然后再 1 至 52 之间随机生成一位整数，将它和数组的倒数第三位替换；
+    ......
+    直至在 1 至 1 之间随机生成一位整数（即 1），将它和数组第 1 位替换（即替换自身）；
+
+    这样做，时间复杂度为 O(n)，且任意一张牌出现的概率都是 1/52，满足：随机结果覆盖所有情况，随机结果出现概率相等！
+
+    数学证明：一张牌被放到第 i 个位置的机率为 P，则 P 会等于前 i-1 个位置都未选到这张牌且第 i 个位置选到这张牌。
+
+  5. 鸽尾式洗牌法（Riffle Shuffle）
+
+    将数组一分为二，再穿插合并，再不断重复这样的操作；
+
+    研究表明：用鸽尾式洗牌法【洗七次】是最有效的打乱手法
+
+  6. 洗乱牌后，按指定区间概率返回牌
+
+    将 54 张牌打乱后，抽到区间 [1,10] 的概率为 40%，抽到区间 [11,20] 的概率为 20%，抽到区间 [21,30] 的概率为 20%，抽到区间 [31,40] 的概率为 15%，剩下的抽到 [41,54] 的概率为 5%；
+
+  7. 实现真正随机而非伪随机
+
+    random() 函数产生的值在 [0,1) 之间，具有大致均匀的分布，不用带参数。
+
+    在 Windows 系统 chrome V8 引擎下，浏览器最终调用一个 rand_s 函数，rand_s 是 Windows 系统提供的一个随机性足够强的随机数发生器。在其他系统下，也是基于当前系统获取高精度的随机数。所以，随机的根本源头是借助了操作系统的能力。
+    
+    Math.random 是一个伪随机数，它是不安全的。从 V8 的源码可以看到 Math.random 的值来源是 /dev/random，取 64 位，值的可能个数为 2 ^ 64，随机算法相对简单，只是保证尽可能的随机分布。54 张扑克牌的全排列 54!（阶层）的值远远大于它。
+
+    真随机数需要从现实世界采集：[random.org](https://www.random.org/) 这个网站是通过采集大气噪音生成随机数。
+
+    还有：量子随机数，原理是 LED 发出随机数的光子，CMOS 捕获光源散粒噪声产生随机序列，量子芯片通过测量光量子态得到的随机数，再进一步来加密信息。
+
+- 实现
+
+  1. 暴力抽取
+
+    ```js
+    let nums=[]
+    for(let i=1;i<=54;i++){
+        nums.push(i)
+    }
+
+    let count = 0 
+    const shuffle = function(nums) {
+        let radomNums = []
+        while (radomNums.length < nums.length) {
+            count++; // count 计数洗牌次数
+            let rand = randOne()
+            if(radomNums.includes(rand)){ // 随机数重复
+                rand = randOne() // 再次生成
+            }else{
+                radomNums.push(rand)
+            }
+        }
+        return radomNums
+    }
+
+    // 在 1 至 54 之间任意取一整数；
+    const randOne= function() {
+        return Math.floor(Math.random() * 54) + 1;
+    }
+
+    console.log(shuffle(nums))
+    console.log(count)
+    // (54) [22, 48, 13, 23, 15, 12, 18, 50, 5, 28, 27, 52, 46, 16, 40, 6, 33, 9, 41, 30, 54, 14, 36, 53, 17, 2, 11, 37, 42, 3, 8, 21, 25, 20, 34, 32, 35, 4, 43, 26, 38, 24, 10, 45, 31, 49, 44, 19, 51, 7, 1, 39, 47, 29]
+    // 271
+    ```
+
+  2. 交换位置
+
+    ```js
+    let nums=[]
+    for(let i=1;i<=54;i++){
+        nums.push(i)
+    }
+
+    const shuffle = function(nums){
+        let radomNums = JSON.parse(JSON.stringify(nums))
+        for(let i = 0;i < 20;i++){
+            let randIndex1 = randOneIndex()
+            let randIndex2 = randOneIndex()
+
+            if(randIndex2 < randIndex1){ // 若 rand2<rand1，二者替换
+                randIndex1 = randIndex1 + randIndex2
+                randIndex2 = randIndex1 - randIndex2 
+                randIndex1 = randIndex1 - randIndex2
+            }
+
+            let radomBlock = radomNums.slice(randIndex1,randIndex2 + 1)
+            radomNums = radomNums.slice(0,randIndex1).concat(radomNums.slice(randIndex2,53)).concat(radomBlock)
+        }
+        return radomNums
+    }
+
+    // 在 0 至 53 之间任意取一整数作数组下标；
+    const randOneIndex= function() {
+        return Math.floor(Math.random() * 54);
+    }
+
+    console.log(shuffle(nums))
+    // (54) [30, 9, 7, 28, 29, 39, 45, 46, 47, 48, 49, 50, 51, 52, 24, 25, 26, 27, 40, 42, 43, 44, 38, 31, 14, 8, 41, 22, 32, 19, 20, 1, 2, 10, 11, 12, 13, 16, 15, 53, 23, 3, 4, 5, 6, 21, 17, 18, 33, 34, 35, 36, 37, 42]
+    ```
+
+  3. 交换位置进阶:第i张与i~len之间的随机数交换位置
+
+    ```js
+    let nums=[]
+    for(let i=1;i<=54;i++){
+        nums.push(i)
+    }
+
+    const shuffle = function(nums) {
+
+        const radomNums = nums.slice(0);
+        let n = radomNums.length;
+
+        // 产生的结果有 n! 种可能
+        for (let i = 0; i < n; i++) {
+
+            // 从 i 到 n-1 随机选一个
+            const rand = randOne(i, n - 1); 
+
+            // 交换nums数组i和rand下标的两个元素
+            [ radomNums[i], radomNums[rand] ] = [ radomNums[rand], radomNums[i] ];
+        }
+
+        return radomNums;
+    };
+
+    // 获取闭区间 [n, m] 内的一个随机整数
+    const randOne= function(n, m) {
+        return Math.floor(Math.random() * (m - n + 1)) + n;
+    };
+
+    console.log(shuffle(nums))
+    // (54) [39, 40, 11, 35, 1, 47, 33, 9, 44, 32, 31, 45, 41, 4, 51, 42, 8, 10, 16, 14, 18, 17, 13, 6, 34, 53, 48, 5, 15, 22, 38, 37, 49, 43, 3, 20, 26, 52, 30, 19, 7, 50, 12, 21, 46, 36, 23, 27, 28, 25, 2, 29, 24, 54]
+    ```
+
+  4. Fisher-Yates 洗牌算法:1~len-i之间随机数与len-i交换位置
+
+    ```js
+    let nums=[]
+    for(let i=1;i<=54;i++){
+        nums.push(i)
+    }
+
+    const FYShuffle = function (nums) {
+
+        const radomNums = nums.slice(0);
+        let len = radomNums.length;
+        
+        while (len > 1) {
+            let rand = Math.floor(Math.random() * len);
+            len--;
+            let temp = radomNums[len];
+            radomNums[len] = radomNums[rand];
+            radomNums[rand] = temp;
+        }
+
+        return radomNums;
+    }
+
+    console.log(FYShuffle(nums))
+    // (54) [47, 17, 33, 13, 37, 26, 20, 39, 45, 44, 25, 40, 49, 7, 36, 38, 6, 15, 31, 18, 52, 46, 28, 11, 43, 1, 22, 19, 53, 9, 14, 27, 35, 8, 51, 42, 50, 2, 23, 5, 30, 54, 4, 21, 29, 16, 10, 24, 48, 34, 32, 12, 41, 3]
+    ```
+
+  5. 鸽尾式洗牌法（Riffle Shuffle）
+
+    ```js
+    let nums=[]
+    for(let i=1;i<=54;i++){
+        nums.push(i)
+    }
+
+    const RShuffle = function (arr) {
+
+        let radomNums = nums.slice(0);
+        for(let i = 0;i < 7;i++){
+            let randIndex = randOneIndex()
+            let arr1 = radomNums.slice(0,randIndex)
+            let arr2 = radomNums.slice(randIndex,55)
+            radomNums = aryJoinAry(arr1 ,arr2)
+        }
+        return radomNums;
+    }
+
+    // 两个数组穿插合并
+    const aryJoinAry = function (ary,ary2) {
+        var itemAry=[];
+        var minLength;
+        //先拿到两个数组中长度较短的那个数组的长度
+        if(ary.length>ary2.length){
+            minLength=ary2.length;
+        }
+        else{
+            minLength=ary.length;
+        }
+        //将两个数组中较长的数组记录下来
+        var longAry=arguments[0].length>arguments[1].length?arguments[0]:arguments[1];
+        //循环范围为较短的那个数组的长度
+        for (var i = 0; i < minLength; i++) {
+            //将数组放入临时数组中
+            itemAry.push(ary[i]);
+            itemAry.push(ary2[i])
+        }
+        //itemAry和多余的新数组拼接起来并返回。
+        return itemAry.concat(longAry.slice(minLength));
+    }
+
+
+    // 在 0 至 53 之间任意取一整数作数组下标；
+    const randOneIndex= function() {
+        return Math.floor(Math.random() * 54);
+    }
+
+    console.log(RShuffle(nums))
+    // (54) [1, 4, 19, 2, 38, 51, 6, 37, 15, 9, 45, 43, 7, 52, 16, 21, 39, 53, 24, 26, 44, 54, 40, 5, 32, 10, 46, 22, 33, 27, 3, 11, 18, 28, 47, 12, 17, 29, 8, 13, 41, 30, 48, 14, 34, 31, 20, 23, 49, 35, 25, 42, 50, 36]
+    ```
+
+  6. 洗乱牌后，按指定区间概率返回牌
+
+    ```js
+    var radomNums = [21,43,12,3,...,8,6,33] // 共 54 项
+
+    var probabilityNums = [0.02,0.015,...,0.04,0.04,0.15] // 共 54 项，和为 1
+
+    function randomProbability(arr1, arr2) {
+          var sum = 0,
+          factor = 0,
+          random = Math.random();
+          for(let i = arr2.length - 1; i >= 0; i--) {
+            sum += arr2[i]; // 统计概率总和
+          };
+          random *= sum; // 生成概率随机数
+          for(let i = arr2.length - 1; i >= 0; i--) {
+            factor += arr2[i];
+            if(random <= factor) return arr1[i]; // 如果在当前的概率范围内，得到的就是当前概率，返回输出
+          };
+          return null;
+    }
+
+    const yourCard = randomProbability(radomNums, probabilityNums)
+
+    console.log(yourCard)
+    ```
+
